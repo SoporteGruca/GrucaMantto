@@ -22,7 +22,6 @@ function MyTabs() {
   )
 }
 
-
 export default function Index() {
   return (
     
