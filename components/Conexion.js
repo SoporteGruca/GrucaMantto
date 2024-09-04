@@ -2,10 +2,8 @@
 const express = require('express');
 const app = express();
 const mssql = require("mssql");
-
 // Get request
 app.get('/', function (req, res) {
-
     // Config your database credential
     const config = {
         user: 'usuarios',
