@@ -1,16 +1,16 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { NavigationContainer } from '@react-navigation/native';
 import { StyleSheet } from "react-native";
 import Login from "./Routes/Login";
 import React from "react";
-import Root from "./Routes/Roots";
+import Formulario from "./Routes/Formulario";
 
 const Stack = createNativeStackNavigator();
 
-export default function Index () {
+export default function App() {
   return (
 
     <Stack.Navigator initialRouteName="Login">
-      <Stack.Screen options={{ headerShown: false}} name="index" component={Index} />
       <Stack.Screen
         options={{ headerShown: false}} 
         name="Login" 

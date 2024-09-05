@@ -1,8 +1,9 @@
-import React, { useState } from "react";
-import { Alert, KeyboardAvoidingView, TextInput } from "react-native";
 import { View, Text, Image, TouchableOpacity } from "react-native";
-import { useNavigation } from "@react-navigation/core";
+import { useUserContext } from "./UserContext";
+import { Alert, TextInput } from "react-native";
 import { StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { router } from "expo-router";
 import axios from "axios";
 
 const Login = ({}) => {
@@ -12,9 +13,7 @@ const Login = ({}) => {
   const [contrasena, setContrasena] = useState("12345678");
 
   // const [loading, setLoading] = useState(false); // Nuevo estado para el ActivityIndicator
-  // const { setNombreUsuario } = useUserContext();
-  const navigation = useNavigation()
- 
+  // const { setNombreUsuario } = useUserContext(); 
   const entrar = async () => {
 
     try {
@@ -30,7 +29,7 @@ const Login = ({}) => {
         // setNombreUsuario(nombreUsuario); // Actualiza el nombre de usuario en el contexto
         setUsuario("");
         setContrasena("");
-        // navigation.navigate("Dashboard") //  No es necesario pasar el nombreUsuario aquí
+        router.push('/Routes/Formulario');
       } else {
         Alert.alert("Credenciales inválidas");
       }
@@ -39,7 +38,7 @@ const Login = ({}) => {
     } finally {
       // setLoading(false); // Ocultar el ActivityIndicator
     }
-    
+
   };
 
   return (
@@ -83,7 +82,7 @@ const Login = ({}) => {
               <Text style={styles.boton}> Ingresar </Text>
             </TouchableOpacity>
           </View>
-          
+
         </View>
       </View>
     </View>
