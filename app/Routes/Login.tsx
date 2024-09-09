@@ -1,8 +1,9 @@
 import { View, Text, Image, TouchableOpacity } from "react-native";
 import { useUserContext } from "./UserContext";
-import { Alert, TextInput } from "react-native";
+import { TextInput } from 'react-native-paper';
 import { StyleSheet } from "react-native";
 import React, { useState } from "react";
+import { Alert } from "react-native";
 import { router } from "expo-router";
 import axios from "axios";
 
@@ -17,7 +18,7 @@ const Login = ({}) => {
   const entrar = async () => {
 
     try {
-      const response = await axios.post("http://192.168.0.46:4000/login", {
+      const response = await axios.post('http://192.168.0.46:4000/login', {
         Usuario,
         contrasena,
       });
@@ -63,8 +64,9 @@ const Login = ({}) => {
               style={styles.textInput}
               placeholder="Usuario"
               value={Usuario}
+              mode='outlined'
               onChangeText={setUsuario}
-            ></TextInput>
+            />
           </View>
           <View>
             <TextInput
@@ -72,8 +74,9 @@ const Login = ({}) => {
               placeholder="Contraseña"
               secureTextEntry={true}
               value={contrasena}
+              mode='outlined'
               onChangeText={setContrasena}
-            ></TextInput>
+            />
           </View>
 
           <View>

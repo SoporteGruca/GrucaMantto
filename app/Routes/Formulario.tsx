@@ -1,11 +1,13 @@
 import * as React from 'react';
 import { Text, View } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+// import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet } from 'react-native';
 import Reportes from './Reportes';
 import Tickets from './Tickets';
 
+const Tab = createBottomTabNavigator();
 
 function HomeScreen() {
     return (
@@ -23,13 +25,32 @@ function HomeScreen() {
     );
   }
 
-  const Tab = createBottomTabNavigator();
-
 export default function Formulario() {  
     return (
-        <Tab.Navigator>
-            <Tab.Screen name="Reportes" component={Reportes} />
-            <Tab.Screen name="Tickets" component={Tickets} />
+        <Tab.Navigator screenOptions={{ headerShown: false,
+          tabBarActiveBackgroundColor: "#242f66",
+          tabBarActiveTintColor: "white",
+          tabBarInactiveTintColor: "#242f66"
+         }}>
+            <Tab.Screen 
+              name="Reportes" 
+              component={Reportes}
+              options={{
+                tabBarIcon: ({ color, size }) => (
+                  <Ionicons name="document-text-outline" color={color} size={size} />
+                ),
+              }}
+            />
+
+            <Tab.Screen 
+              name="Tickets"
+              component={Tickets} 
+              options={{
+                tabBarIcon: ({ color, size }) => (
+                  <Ionicons name="server-outline" color={color} size={size} />
+                ),
+              }}
+            />
         </Tab.Navigator>
   );
 }
