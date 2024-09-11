@@ -1,5 +1,5 @@
 import { View, Text, Image, TouchableOpacity } from "react-native";
-import { useUserContext } from "./UserContext";
+import {ActivityIndicator} from 'react-native';
 import { TextInput } from 'react-native-paper';
 import { StyleSheet } from "react-native";
 import React, { useState } from "react";
@@ -8,15 +8,13 @@ import { router } from "expo-router";
 import axios from "axios";
 
 const Login = ({}) => {
-  // const [Usuario, setUsuario] = useState("");
-  // const [contrasena, setContrasena] = useState("");
   const [Usuario, setUsuario] = useState("Samael");
   const [contrasena, setContrasena] = useState("12345678");
 
-  // const [loading, setLoading] = useState(false); // Nuevo estado para el ActivityIndicator
+  const [loading, setLoading] = useState(false); // Nuevo estado para el ActivityIndicator
   // const { setNombreUsuario } = useUserContext(); 
   const entrar = async () => {
-
+    setLoading(true);
     try {
       const response = await axios.post('http://192.168.0.46:4000/login', {
         Usuario,
@@ -26,24 +24,21 @@ const Login = ({}) => {
       const data = response.data;
 
       if (data.success) {
-        const nombreUsuario = data.user.NomUsuario;
-        // setNombreUsuario(nombreUsuario); // Actualiza el nombre de usuario en el contexto
         setUsuario("");
         setContrasena("");
-        router.push('/Routes/Formulario');
+        router.navigate('/Routes/Formulario');
       } else {
         Alert.alert("Credenciales inválidas");
       }
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
-      // setLoading(false); // Ocultar el ActivityIndicator
+      setLoading(false); // Ocultar el ActivityIndicator
     }
 
   };
 
   return (
-
     <View style={styles.container}>
       <View style={styles.containerLogo}>
         <Image style={styles.logo} source={require("../../assets/images/logo.png")} />
@@ -80,11 +75,17 @@ const Login = ({}) => {
           </View>
 
           <View>
-            <TouchableOpacity
-            onPress={entrar}>
+            <TouchableOpacity onPress={entrar}>
               <Text style={styles.boton}> Ingresar </Text>
             </TouchableOpacity>
           </View>
+
+          {loading && (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" />
+            </View>
+          )}
+          <View></View>
 
         </View>
       </View>
@@ -158,6 +159,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0)",
     justifyContent: "center",
     alignItems: "center",
+    padding:20,
   },
 });
 export default Login;
