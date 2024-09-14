@@ -1,19 +1,26 @@
 import { View, Text, Image, TouchableOpacity } from "react-native";
+import { Button, TextInput } from 'react-native-paper';
 import {ActivityIndicator} from 'react-native';
-import { TextInput } from 'react-native-paper';
 import { StyleSheet } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Alert } from "react-native";
-import { router } from "expo-router";
+import { router, SplashScreen } from "expo-router";
 import axios from "axios";
 
-const Login = ({}) => {
-  const [Usuario, setUsuario] = useState("Samael");
-  const [contrasena, setContrasena] = useState("12345678");
+// import { useUserContext } from "./UserContext";
 
+const Login = ({}) => {
+
+  const [contrasena, setContrasena] = useState("12345678");
+  const [Usuario, setUsuario] = useState("Oscar");
+  // const [contrasena, setContrasena] = useState("");
+  // const [Usuario, setUsuario] = useState("");
+  // const {setNombreUsuario} = useUserContext(); 
   const [loading, setLoading] = useState(false); // Nuevo estado para el ActivityIndicator
-  // const { setNombreUsuario } = useUserContext(); 
+
+
   const entrar = async () => {
+
     setLoading(true);
     try {
       const response = await axios.post('http://192.168.0.46:4000/login', {
@@ -22,11 +29,14 @@ const Login = ({}) => {
       });
 
       const data = response.data;
-
+      
       if (data.success) {
+        const nombreUsuario = data.user.NomUsuario;
+        // console.log(nombreUsuario);
+        // setNombreUsuario(nombreUsuario);
         setUsuario("");
         setContrasena("");
-        router.navigate('/Routes/Formulario');
+        router.push("/Routes/Forms")
       } else {
         Alert.alert("Credenciales inválidas");
       }
@@ -40,44 +50,56 @@ const Login = ({}) => {
 
   return (
     <View style={styles.container}>
+
       <View style={styles.containerLogo}>
+
         <Image style={styles.logo} source={require("../../assets/images/logo.png")} />
+
         <View style={styles.textoLogo}>
           <Text style={styles.titulo}>Mantenimiento</Text>
           <Text style={styles.titulo}>Maquinas</Text>
         </View>
+
       </View>
+      
       <View style={styles.containerImagen}>
         <Image style={styles.image} source={require("../../assets/images/login.png")} />
         <View style={styles.textInputContainer}>
-          <View style={{ alignItems: "center" }}>
-            <Text style={{ fontSize: 25, color: "white" }}>Iniciar Sesion</Text>
-          </View>
+
+          <Text style={styles.textos}>Iniciar Sesion</Text>
 
           <View style={styles.textinput2}>
             <TextInput
+              label="Usuario"
               style={styles.textInput}
               placeholder="Usuario"
               value={Usuario}
-              mode='outlined'
               onChangeText={setUsuario}
             />
           </View>
+
           <View>
             <TextInput
+              label="Contraseña"
               style={styles.textInput}
               placeholder="Contraseña"
               secureTextEntry={true}
               value={contrasena}
-              mode='outlined'
               onChangeText={setContrasena}
             />
           </View>
 
+
           <View>
-            <TouchableOpacity onPress={entrar}>
-              <Text style={styles.boton}> Ingresar </Text>
-            </TouchableOpacity>
+
+            <Button onPress={entrar}
+              icon="login"
+              style={styles.txtBoton}
+              mode='contained'
+              buttonColor='#b83233'>
+              Ingresar
+            </Button>
+
           </View>
 
           {loading && (
@@ -85,7 +107,6 @@ const Login = ({}) => {
               <ActivityIndicator size="large" />
             </View>
           )}
-          <View></View>
 
         </View>
       </View>
@@ -97,10 +118,18 @@ const Login = ({}) => {
 const styles = StyleSheet.create({
   container: {
     height: "100%",
+    width:"100%",
     justifyContent: "flex-end",
   },
-  containerImagen: {
+  container2: {
+    height: "100%",
+    width:"100%",
+  },
+  containerLogo: {
     alignItems: "center",
+  },
+  containerImagen: {
+    alignItems: "flex-end",
     justifyContent: "flex-end",
     paddingTop: 30,
   },
@@ -108,46 +137,46 @@ const styles = StyleSheet.create({
     resizeMode: "stretch",
     width: "100%",
   },
-  containerLogo: {
-    justifyContent: "flex-start",
-    alignItems: "center",
-  },
   logo: {
     width: 150,
     height: 150,
   },
   textoLogo: {
-    marginTop: 10,
     alignItems: "center",
   },
   titulo: {
-    fontSize: 25,
-    fontWeight: "bold",
-    fontFamily: "",
+    fontSize: 35,
+    marginTop: "5%",
+    textShadowColor: "blue",
+    textShadowRadius: 1,
+  },
+  textos: {
+    textShadowRadius: 5,
+    textShadowColor:"#6e758b",
+    textAlign:"center",
+    fontSize: 30,
+    color:"white",
   },
   textInputContainer: {
     position: "absolute",
-    top: 100, // Ajusta la posición vertical del TextInput
-    left: 80, // Ajusta la posición horizontal del TextInput
+    top: "25%", // Ajusta la posición vertical del TextInput
+    left:0,
     zIndex: 1,
+    width:"100%",
+    alignItems:"center"
   },
   textInput: {
     width: 250,
     height: 40,
-    borderWidth: 1,
-    borderColor: "gray",
-    backgroundColor: "white",
-    paddingHorizontal: 10,
     borderRadius: 5,
   },
   textinput2: {
     marginBottom: 40,
     marginTop: 30,
   },
-  boton: {
+  txtBoton: {
     color: "white",
     borderRadius: 5,
-    backgroundColor: "#FF8080",
     overflow: "hidden",
     padding: 10,
     fontSize: 18,

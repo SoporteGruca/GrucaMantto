@@ -1,10 +1,10 @@
-import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
+import { CameraType, useCameraPermissions } from 'expo-camera';
 import { TextInput, TouchableOpacity, Image, Alert, } from "react-native";
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import React, { useEffect, useState, useRef } from "react";
 import { StyleSheet, Text, View, ScrollView } from "react-native";
 import { Button, Icon } from 'react-native-paper';
-import { useUserContext } from "./UserContext";
+// import { useUserContext } from "./UserContext";
 import { Camera } from "expo-camera/legacy";
 import { Linking } from "react-native";
 import moment from "moment";
@@ -17,16 +17,12 @@ import RNPickerSelect from 'react-native-picker-select';
 const Tab = createBottomTabNavigator();
 
 const Reportes = () => {
-  
-  const placeholder = {
-    label: 'Select an option...',
-    value: null,
-  };
-
   //Datos
   const [equipoData, setEquipoData] = useState([{ }]);
   const [marcaData, setMarcaData] = useState([{ }]);
   const [fallaData, setFallaData] = useState([{ }]);
+  const [ubiData, setUbiData] = useState([{ }]);
+  const [encData, setEncData] = useState([{ }]);
   const [falla, setFalla] = useState("");
 
   //Camara
@@ -62,7 +58,7 @@ const Reportes = () => {
     try {
       const response = await axios.get("http://192.168.0.46:4000/foliosm");
       const recordset = response.data;
-      
+            
       if (Array.isArray(recordset) && recordset.length > 0) {
         const countValue = recordset[0][""];
 
@@ -72,6 +68,7 @@ const Reportes = () => {
           const folioPredeterminado = `RM-${numeroPredeterminado
             .toString()
             .padStart(4, "0")}`;
+          setFolio(folioPredeterminado);
           
         } else {
           console.error("El valor del recuento no es válido:", countValue);
@@ -84,12 +81,57 @@ const Reportes = () => {
     }
   };
 
+  useEffect(() => {
+    var config = {
+      method: "get",
+      url: `http://192.168.0.46:4000/ubicacion`,
+    };
+
+    axios(config).then(function (response) {
+      var count = Object.keys(response.data).length;      
+      let equipoArray = [];      
+        for (var i = 0; i < count; i++) {
+          equipoArray.push({
+            value: response.data[i].UbicaMaq,
+            label: response.data[i].UbicaMaq,
+          });
+        }
+        setUbiData(equipoArray);
+      })
+    .catch(function (error) {
+      console.log(error);
+    });
+  }, []);
+
+  useEffect(() => {
+    var config = {
+      method: "get",
+      url: `http://192.168.0.46:4000/encargado`,
+    };
+
+    axios(config).then(function (response) {      
+      var count = Object.keys(response.data).length;   
+      let equipoArray = [];      
+        for (var i = 0; i < count; i++) {
+          equipoArray.push({
+            value: response.data[i].Encargado,
+            label: response.data[i].Encargado,
+          });
+        }
+        setEncData(equipoArray);
+        
+      })
+    .catch(function (error) {
+      console.log(error);
+    });
+  }, []);
+
   const generarFolio = () => {
     const nuevoNumero = parseInt(folio.split("-")[1]) + 1;
     const nuevoFolio = `RM-${nuevoNumero.toString().padStart(4, "0")}`;
     setFolio(nuevoFolio);        
+    
   };
-
 
   useEffect(() => {
     var config = {
@@ -97,8 +139,7 @@ const Reportes = () => {
       url: `http://192.168.0.46:4000/maquinas`,
   };
 
-  axios(config)
-  .then(function (response) {
+  axios(config).then(function (response) {
     var count = Object.keys(response.data).length;
     let equipoArray = [];
     for (var i = 0; i < count; i++) {
@@ -110,7 +151,7 @@ const Reportes = () => {
     setEquipoData(equipoArray);
   })
   .catch(function (error) {
-    // console.log(error);
+    console.log(error);
   });
   }, []);
 
@@ -166,27 +207,6 @@ const Reportes = () => {
     };
   }
 
-  //Seccion de camara
-  
-  // if (!permission) {
-  //   // Camera permissions are still loading.
-  //   return <View />;
-  // }
-
-  // if (!permission.granted) {
-    
-  //   //En caso de que la camara no tenga permisos, esta los solicita.
-  //   return (
-  //     <View>
-  //       <Text>We need your permission to show the camera</Text>
-  //       <Text>Necesita permisos para mostrar la camara</Text>
-  //       <Button onPress={requestPermission} mode="contained"> 
-  //         Grant permissions
-  //       </Button>
-  //     </View>
-  //   );
-  // }
-
   const cameraRef = useRef(null);
   useEffect(() => {
     (async () => {
@@ -195,17 +215,18 @@ const Reportes = () => {
     })();
   }, []);
 
-
   const takePicture = async () => {
-    if (cameraRef.current) {
-      try {
-        const data : any = await cameraRef.current.takePictureAsync();
-        console.log(data);
-        setImage(data.uri);
-      } catch (error) {
-        console.log(error);
-      }
-    }
+
+    alert("La foto no fue guardada, se sigue trajando en la reparacion.")
+    // if (cameraRef.current) {
+    //   try {
+    //     const data : any = await cameraRef.current.takePictureAsync();
+    //     console.log(data);
+    //     setImage(data.uri);
+    //   } catch (error) {
+    //     console.log(error);
+    //   }
+    // }
   };
   if (hasCameraPermission === false) {
     return (
@@ -230,10 +251,10 @@ const Reportes = () => {
       Alert.alert("Debe llenar todos los campos de la maquina a reportar");
     } else {
       try {
-        // await fetchCount();
-        // setDescripcion("");
+        await fetchCount();
         generarFolio();
-        // enviarDatos();
+        enviarDatos();
+        // setDescripcion("");
         // setEquipo("");
         // setNum("");
         // setFalla("");
@@ -242,8 +263,8 @@ const Reportes = () => {
         // setDepto("");
         // setUbi("");
         // setImage(null);
-        // await fetchCount();
-        // generarFolio();
+        await fetchCount();
+        generarFolio();
         // openGmail();
         Alert.alert("Reporte Enviado");
       } catch (error) {
@@ -255,63 +276,67 @@ const Reportes = () => {
 
   const enviarDatos = async () => {
 
+    try {
+      const fechaHora = moment().format("lll");
+      const formData: any = new FormData();
+      // formData.append("image", {
+      //   uri: image,
+      //   type: "image/png",
+      //   name: "imagen.png",
+      // });<sw
 
-  //   try {
-  //     const fechaHora = moment().format("lll");
-  //     const formData: any = new FormData();
-  //     formData.append("image", {
-  //       uri: image,
-  //       type: "image/png",
-  //       name: "imagen.png",
-  //     });
+      formData.append("fecha", fechaHora.toString());
+      formData.append("usuario", "");
+      formData.append("encargado", encargado.toString());
+      formData.append("departamento", depto.toString());
+      formData.append("id", num);
+      formData.append("maquina", marca.toString());
+      formData.append("clase", equipo.toString());
+      formData.append("falla", falla);
+      formData.append("ubicacion", ubi.toString());
+      formData.append("descripcion", descripcion.toString());
+      formData.append("estado", "Pendiente");
+      formData.append("personal", "");
+      formData.append("descripcionfalla", descripcion.toString());
+      formData.append("acciones", "");
+      formData.append("folio", folio.toString());
 
-  //     formData.append("fecha", fechaHora.toString());
-  //     // formData.append("usuario", nombreUsuario);
-  //     formData.append("encargado", encargado);
-  //     formData.append("departamento", depto);
-  //     formData.append("id", num);
-  //     formData.append("maquina", marca.toString());
-  //     formData.append("clase", equipo.toString());
-  //     formData.append("falla", falla);
-  //     formData.append("ubicacion", ubi);
-  //     formData.append("descripcion", descripcion.toString());
-  //     formData.append("estado", "Pendiente");
-  //     formData.append("personal", "");
-  //     formData.append("descripcionfalla", "");
-  //     formData.append("acciones", "");
-  //     formData.append("folio", folio.toString());
+      console.log(formData);
+      
+      
+      const response = await axios.post(
+        "http://192.168.0.46:4000/maquinas",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
-  //     const response = await axios.post(
-  //       "http://192.168.0.46:4000/maquinas",
-  //       formData,
-  //       {
-  //         headers: {
-  //           "Content-Type": "multipart/form-data",
-  //         },
-  //       }
-  //     );
-
-  //     Alert.alert("Reporte Enviado");
-  //     console.log("Respuesta del servidor:", response.data);
-  //   } catch (error) {
-  //     console.error("Error al realizar la solicitud POST:", error);
-  //   }
+      Alert.alert("Reporte Enviado");
+    } catch (error) {
+      console.error("Error al realizar la solicitud POST:", error);
+    }
   };
 
-  const openGmail = async () => {
-    const emailAddress = "reporteyfallas@gruca.mx";
-    const subject = `Se ha registrado un Reporte con el folio: ${folio}`;
-    // const body = `${nombreUsuario} ha enviado un Reporte de ${equipo} debido a que ${descripcion}`;
+  // const openGmail = async () => {
+  //   const emailAddress = "reporteyfallas@gruca.mx";
+  //   const subject = `Se ha registrado un Reporte con el folio: ${folio}`;
+  //   const body = `Se ha enviado un Reporte de ${equipo} debido a que ${descripcion}`;
 
-    // const mailtoUrl = `mailto:${emailAddress}?subject=${subject}&body=${body}`;
+  //   const mailtoUrl = `mailto:${emailAddress}?subject=${subject}&body=${body}`;
 
-    // Linking.openURL(mailtoUrl);
-  };
+  //   Linking.openURL(mailtoUrl);
+  // };
 
+//   const onChangeHandler = event => {
+//     setEquipo(event.target.value);
+//  };
 
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.containerScroll}>
+      <ScrollView>
 
         <Text style={styles.text}>Maquina a reportar</Text>      
         <Dropdown
@@ -333,7 +358,7 @@ const Reportes = () => {
           renderLeftIcon={ () => (
             <AntDesign color="black" name="tool" size={20} />
           )}
-          onChange={(item) => {
+          onChange={(item : any) => {
             setEquipo(item.value);
             handleState(item.value);
             setIsFocus(false);
@@ -357,59 +382,85 @@ const Reportes = () => {
           value={marca}
           onFocus={() => setIsFocus(true)}
           onBlur={() => setIsFocus(false)}
-          onChange={(item) => {
+          onChange={(item : any) => {
             setMarca(item.value);
             handleState2(item.value);
             setIsFocus(false);
           }}
         />
 
-        <View>    
-          <Text style={styles.text}> Tipo Falla</Text>
-          <Dropdown
-            style={[styles.dropdown, isFocus && { borderColor: 'blue' }]}
-            placeholderStyle={styles.placeholderStyle}
-            selectedTextStyle={styles.selectedTextStyle}
-            inputSearchStyle={styles.inputSearchStyle}
-            iconStyle={styles.iconStyle}
-            data={fallaData}
-            search
-            maxHeight={300}
-            labelField="label"
-            valueField="value"
-            placeholder={!isFocus ? "Seleccione la falla" : "..."}
-            searchPlaceholder="Buscar..."
-            value={falla}
-            onFocus={() => setIsFocus(true)}
-            onBlur={() => setIsFocus(false)}
-            onChange={(item) => {
-              setFalla(item.value);
-              setIsFocus(false);
-          }}/>
-        </View>
+        <Text style={styles.text}> Tipo Falla</Text>
+        <Dropdown
+          style={[styles.dropdown, isFocus && { borderColor: 'blue' }]}
+          placeholderStyle={styles.placeholderStyle}
+          selectedTextStyle={styles.selectedTextStyle}
+          inputSearchStyle={styles.inputSearchStyle}
+          iconStyle={styles.iconStyle}
+          data={fallaData}
+          search
+          maxHeight={300}
+          labelField="label"
+          valueField="value"
+          placeholder={!isFocus ? "Seleccione la falla" : "..."}
+          searchPlaceholder="Buscar..."
+          value={falla}
+          onFocus={() => setIsFocus(true)}
+          onBlur={() => setIsFocus(false)}
+          onChange={(item : any) => {
+            setFalla(item.value);
+            setIsFocus(false);
+        }}/>
+
+        <Text style={styles.Text}> Ubicación </Text>
+        <Dropdown
+          style={[styles.dropdown]}
+          placeholderStyle={styles.placeholderStyle}
+          selectedTextStyle={styles.selectedTextStyle}
+          inputSearchStyle={styles.inputSearchStyle}
+          iconStyle={styles.iconStyle}
+          data={ubiData}
+          search
+          maxHeight={300}
+          labelField="label"
+          valueField="value"
+          placeholder={"Selecciona la ubicacion"}
+          searchPlaceholder="Buscar..."
+          value={ubi}
+          onChange={(item : any) => {
+            setUbi(item.value);
+        }}/>
+
+        <Text style={styles.Text}> Operador </Text>
+        <Dropdown
+          style={[styles.dropdown]}
+          placeholderStyle={styles.placeholderStyle}
+          selectedTextStyle={styles.selectedTextStyle}
+          inputSearchStyle={styles.inputSearchStyle}
+          iconStyle={styles.iconStyle}
+          data={encData}
+          search
+          maxHeight={300}
+          labelField="label"
+          valueField="value"
+          placeholder={"Selecciona al operador"}
+          searchPlaceholder="Buscar..."
+          value={encargado}
+          onChange={(item : any) => {
+            setEncargado(item.value);
+        }}/>
+            
 
         <View style={styles.containerLine}>
+
           <View style={styles.containerLineInside}>
             <Text style={styles.text}> Numero de maquina</Text>
             <TextInput placeholder="Numero de maquina"
               style={styles.boxsmall1}
+              keyboardType="numeric"
               onChangeText={setNum}
               value={num}
             />
           </View>
-
-          <View style={styles.containerLineInside}>
-            <Text style={styles.text}> Operador </Text>
-            <TextInput placeholder="Operador"
-              style={styles.boxsmall1}
-              onChangeText={setEncargado}
-              value={encargado}
-          />
-          </View>
-
-        </View>
-
-        <View style={styles.containerLine}>
           <View style={styles.containerLineInside}>
             <Text style={styles.text}> Departamento encargado </Text>
             <TextInput
@@ -420,30 +471,20 @@ const Reportes = () => {
             ></TextInput>
           </View>
 
-          <View style={styles.containerLineInside}>
-            <Text style={styles.Text}> Ubicación </Text>
-            <TextInput
-              multiline 
-              placeholder="Ubicación"
-              style={styles.boxsmall}
-              onChangeText={setUbi}
-              value={ubi}
-            ></TextInput>
-          </View>
+        </View>
 
-        </View>
-          
         <View style={styles.containerLineInside}>
-            <Text style={styles.Text}> Descripción </Text>
-            <TextInput
-              multiline // Esta prop permite el ingreso de múltiples líneas
-              numberOfLines={4} // Establece la altura inicial del componente
-              placeholder="Descrpción "
-              style={styles.boxBig}
-              onChangeText={setDescripcion}
-              value={descripcion}
-            ></TextInput>
+          <Text style={styles.Text}> Descripción de la falla </Text>
+          <TextInput
+            multiline // Esta prop permite el ingreso de múltiples líneas
+            numberOfLines={4} // Establece la altura inicial del componente
+            placeholder="Descrpción de la falla "
+            style={styles.boxBig}
+            onChangeText={setDescripcion}
+            value={descripcion}
+          ></TextInput>
         </View>
+
 
         <View style={styles.containerFoto}>
           {/* <CameraView style={styles.containerFoto} facing={facing}>
@@ -455,7 +496,7 @@ const Reportes = () => {
 
           {!image ? (
             <Camera
-              style={styles.imagenContainer}
+              style={styles.containerFoto}
               // type={type}
               // flashMode={flash}
               ref={cameraRef}
@@ -475,6 +516,15 @@ const Reportes = () => {
               mode='contained'
               buttonColor='#b01212'>
               Borrar
+            </Button>
+          </View>
+
+          <View style={styles.LineButtonTomarFoto}>
+            <Button onPress={takePicture}
+              icon="camera"
+              mode='contained'
+              buttonColor='#374175'>
+              Tomar foto
             </Button>
           </View>
 
@@ -512,9 +562,6 @@ const styles = StyleSheet.create({
       width:'100%',
       padding: 10,
       backgroundColor:"#e8e8e8"
-    },
-    containerScroll: {
-      width:"100%",
     },
     containerLine: {
       flexDirection:'row',
