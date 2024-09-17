@@ -6,6 +6,8 @@ import { StyleSheet, Text, View, ScrollView } from "react-native";
 import { Button, Icon } from 'react-native-paper';
 // import { useUserContext } from "./UserContext";
 import { Camera } from "expo-camera/legacy";
+// import { Camera } from "react-native-camera";
+import { CameraView } from 'expo-camera';
 import { Linking } from "react-native";
 import moment from "moment";
 import { Dropdown } from "react-native-element-dropdown";
@@ -24,13 +26,13 @@ const Reportes = () => {
   const [ubiData, setUbiData] = useState([{ }]);
   const [encData, setEncData] = useState([{ }]);
   const [falla, setFalla] = useState("");
+  const [isCameraReady, setIsCameraReady] = useState(false);
 
   //Camara
   const [hasCameraPermission, setHasCameraPermission] = useState({});
   // const [flash, stFlash] = useState(Camera.Constants.FlashMode.off);
   // const [type, SetType] = useState(Camera.Constants.Type.back);
   const [facing, setFacing] = useState<CameraType>('back');
-  const [image, setImage] = useState(null);
   const [permission, requestPermission] = useCameraPermissions();
 
   //Valores
@@ -42,6 +44,7 @@ const Reportes = () => {
   const [num, setNum] = useState("");
   const [ubi, setUbi] = useState("");
   const [photo, setPhoto] = useState("");
+  const [fotoUri, setFotoUri] = useState(null);
   // const {nombreUsuario, setNombreUsuario } = useUserContext();
   
   //Funciones
@@ -207,7 +210,7 @@ const Reportes = () => {
     };
   }
 
-  const cameraRef = useRef(null);
+  const cameraRef = useRef();
   useEffect(() => {
     (async () => {
       const cameraStatus = await Camera.requestCameraPermissionsAsync();
@@ -215,18 +218,25 @@ const Reportes = () => {
     })();
   }, []);
 
+  // const onCameraReady = () => {
+  //   setIsCameraReady(true);
+  //   };
+
   const takePicture = async () => {
 
-    alert("La foto no fue guardada, se sigue trajando en la reparacion.")
-    // if (cameraRef.current) {
-    //   try {
-    //     const data : any = await cameraRef.current.takePictureAsync();
-    //     console.log(data);
-    //     setImage(data.uri);
-    //   } catch (error) {
-    //     console.log(error);
-    //   }
+    setFotoUri(null);
+    const camera = cameraRef.current;
+    if (!camera) return;
+
+    // try {
+    //   const data : any = await camera.takePictureAsync({ base64: true, });
+    //   setFotoUri(data.uri);
+    //   console.log(data);
+    // } catch (error) {
+    //   console.log('Error:', error);
     // }
+
+    // alert("La foto no fue guardada, se sigue trajando en la reparacion.")
   };
   if (hasCameraPermission === false) {
     return (
@@ -262,7 +272,7 @@ const Reportes = () => {
         // setEncargado("");
         // setDepto("");
         // setUbi("");
-        // setImage(null);
+        // setFotoUri(null);
         await fetchCount();
         generarFolio();
         // openGmail();
@@ -285,21 +295,21 @@ const Reportes = () => {
       //   name: "imagen.png",
       // });<sw
 
-      formData.append("fecha", fechaHora.toString());
-      formData.append("usuario", "");
-      formData.append("encargado", encargado.toString());
-      formData.append("departamento", depto.toString());
-      formData.append("id", num);
-      formData.append("maquina", marca.toString());
-      formData.append("clase", equipo.toString());
-      formData.append("falla", falla);
-      formData.append("ubicacion", ubi.toString());
-      formData.append("descripcion", descripcion.toString());
-      formData.append("estado", "Pendiente");
-      formData.append("personal", "");
-      formData.append("descripcionfalla", descripcion.toString());
-      formData.append("acciones", "");
-      formData.append("folio", folio.toString());
+      // formData.append("fecha", fechaHora.toString());
+      // formData.append("usuario", "");
+      // formData.append("encargado", encargado.toString());
+      // formData.append("departamento", depto.toString());
+      // formData.append("id", num);
+      // formData.append("maquina", marca.toString());
+      // formData.append("clase", equipo.toString());
+      // formData.append("falla", falla);
+      // formData.append("ubicacion", ubi.toString());
+      // formData.append("descripcion", descripcion.toString());
+      // formData.append("estado", "Pendiente");
+      // formData.append("personal", "");
+      // formData.append("descripcionfalla", descripcion.toString());
+      // formData.append("acciones", "");
+      // formData.append("folio", folio.toString());
 
       console.log(formData);
       
@@ -347,7 +357,7 @@ const Reportes = () => {
           iconStyle={styles.iconStyle}
           data={equipoData}
           search
-          maxHeight={300}
+          maxHeight={200}
           labelField="label"
           valueField="value"
           placeholder={!isFocus ? "Seleccione maquina" : "..."}
@@ -356,7 +366,7 @@ const Reportes = () => {
           onFocus={() => setIsFocus(true)}
           onBlur={() => setIsFocus(false)}
           renderLeftIcon={ () => (
-            <AntDesign color="black" name="tool" size={20} />
+            <AntDesign color="red" name="tool" size={25} />
           )}
           onChange={(item : any) => {
             setEquipo(item.value);
@@ -374,7 +384,7 @@ const Reportes = () => {
           iconStyle={styles.iconStyle}
           data={marcaData}
           search
-          maxHeight={300}
+          maxHeight={200}
           labelField="label"
           valueField="value"
           placeholder={!isFocus ? "Seleccione equipo" : "..."}
@@ -398,7 +408,7 @@ const Reportes = () => {
           iconStyle={styles.iconStyle}
           data={fallaData}
           search
-          maxHeight={300}
+          maxHeight={200}
           labelField="label"
           valueField="value"
           placeholder={!isFocus ? "Seleccione la falla" : "..."}
@@ -411,7 +421,7 @@ const Reportes = () => {
             setIsFocus(false);
         }}/>
 
-        <Text style={styles.Text}> Ubicación </Text>
+        <Text style={styles.text}> Ubicación </Text>
         <Dropdown
           style={[styles.dropdown]}
           placeholderStyle={styles.placeholderStyle}
@@ -420,17 +430,17 @@ const Reportes = () => {
           iconStyle={styles.iconStyle}
           data={ubiData}
           search
-          maxHeight={300}
+          maxHeight={200}
           labelField="label"
           valueField="value"
-          placeholder={"Selecciona la ubicacion"}
+          placeholder={"Seleccione la falla..."}
           searchPlaceholder="Buscar..."
           value={ubi}
           onChange={(item : any) => {
             setUbi(item.value);
         }}/>
 
-        <Text style={styles.Text}> Operador </Text>
+        <Text style={styles.text}> Operador </Text>
         <Dropdown
           style={[styles.dropdown]}
           placeholderStyle={styles.placeholderStyle}
@@ -439,11 +449,10 @@ const Reportes = () => {
           iconStyle={styles.iconStyle}
           data={encData}
           search
-          maxHeight={300}
+          maxHeight={200}
           labelField="label"
           valueField="value"
-          placeholder={"Selecciona al operador"}
-          searchPlaceholder="Buscar..."
+          placeholder={"Seleccione la falla..."}
           value={encargado}
           onChange={(item : any) => {
             setEncargado(item.value);
@@ -477,7 +486,7 @@ const Reportes = () => {
           <Text style={styles.Text}> Descripción de la falla </Text>
           <TextInput
             multiline // Esta prop permite el ingreso de múltiples líneas
-            numberOfLines={4} // Establece la altura inicial del componente
+            numberOfLines={6} // Establece la altura inicial del componente
             placeholder="Descrpción de la falla "
             style={styles.boxBig}
             onChangeText={setDescripcion}
@@ -486,45 +495,39 @@ const Reportes = () => {
         </View>
 
 
-        <View style={styles.containerFoto}>
-          {/* <CameraView style={styles.containerFoto} facing={facing}>
+        <View style={styles.containerGeFoto}>
+          <CameraView style={styles.containerFoto}
+            facing={facing}
+            >
             <View>
               <TouchableOpacity>
               </TouchableOpacity>
             </View>
-          </CameraView> */}
+          </CameraView>
 
-          {!image ? (
+          {/* {!fotoUri ? (
             <Camera
               style={styles.containerFoto}
+              autoFocus={true}
               // type={type}
               // flashMode={flash}
               ref={cameraRef}
             ></Camera>
           ) : (
-            <Image style={styles.imagenCapturada} source={{ uri: image }} />
-          )}
+            <Image style={styles.imagenCapturada} source={{ uri: fotoUri }} />
+          )} */}
 
         </View>
 
         <View style={styles.containerButton}>
 
           <View style={styles.LineButtonBorrar}>
-            <Button onPress={() => setImage(null)}
+            <Button onPress={() => setFotoUri(null)}
               icon="delete"
               style={styles.botonBorrar}
               mode='contained'
               buttonColor='#b01212'>
               Borrar
-            </Button>
-          </View>
-
-          <View style={styles.LineButtonTomarFoto}>
-            <Button onPress={takePicture}
-              icon="camera"
-              mode='contained'
-              buttonColor='#374175'>
-              Tomar foto
             </Button>
           </View>
 
@@ -560,62 +563,60 @@ const styles = StyleSheet.create({
     container: {
       height: '100%',
       width:'100%',
-      padding: 10,
+      padding: 15,
       backgroundColor:"#e8e8e8"
+      // backgroundColor:"red"
     },
     containerLine: {
       flexDirection:'row',
-      paddingLeft:12,
-      paddingRight:12,
+      justifyContent:"space-around"
     },
     containerLineInside: {
       alignItems:"center",
-      alignContent:"center",
     },
     containerButton:{
       flexDirection:"row",
-      alignItems:"center",
-      width:"95%",
-      height:100
+      justifyContent:"space-around",
+      paddingTop:"5%"
     },
     LineButtonBorrar: {
-      width:"50%",
-      margin:5
+      width: 150
     },
     LineButtonTomarFoto: {
-      width:"50%",
-      margin:5
+      width: 150
+    },
+    text: {
+      fontSize: 18,
+      marginVertical:"1%"
     },
     dropdown: {
-      height: 40,
+      height: 30,
       borderColor: "gray",
-      borderWidth: 2,
-      borderRadius: 4,
-      paddingHorizontal: 10,
-      marginLeft: 5,
-      width: '95%',
+      borderWidth: .5,
+      width: '98%',
       backgroundColor: "#fff",
-      marginBottom: 10,
-      marginTop: 10,
+      paddingLeft:"3%",
     },
     iconStyle: {
       width: 20,
       height: 20,
+      tintColor:"white",
+      backgroundColor:"#3a456f"
     },
     placeholderStyle: {
-      fontSize: 14,
+      fontSize: 16,
+      left:10
     },
     selectedTextStyle: {
-      fontSize: 14,
+      fontSize: 16,
+      left:10,
+      fontWeight:"600",
+      fontStyle:"italic"
     },
     inputSearchStyle: {
-      height: 40,
-      fontSize: 14,
-    },
-    text: {
-      fontSize: 16,
-      marginLeft: 5,
-      fontWeight: "bold",
+      height: 30,
+      fontSize: 18,
+      color:"#242f66"
     },
     boxsmall1: {
       width: 170,
@@ -656,10 +657,13 @@ const styles = StyleSheet.create({
       minHeight: 40,
       maxHeight: 60,
     },
-    containerFoto: {      
+    containerGeFoto: {      
       width:"100%",
-      height:200,
-      flexDirection:"row",
+      alignItems:"center",
+    },
+    containerFoto: {      
+      width:"70%",
+      height: 240,
     },
     botonBorrar: {
     },
@@ -678,7 +682,6 @@ const styles = StyleSheet.create({
       marginBottom: 15,
       marginRight: 10,
     },
-  
     boton: {
       backgroundColor: "salmon",
       justifyContent: "center",
