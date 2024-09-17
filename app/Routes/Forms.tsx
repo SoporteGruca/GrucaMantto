@@ -9,10 +9,10 @@ import Tickets from './Tickets';
 const Tab = createBottomTabNavigator();
 
 function HomeScreen() {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>Reporte de Equipos</Text>
-      </View>
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text>Reporte de Equipos</Text>
+    </View>
     );
   }
   
@@ -25,32 +25,33 @@ function HomeScreen() {
   }
 
 export default function Formulario() {  
-    return (
-        <Tab.Navigator screenOptions={{ headerShown: false,
-          tabBarActiveBackgroundColor: "#242f66",
-          tabBarActiveTintColor: "white",
-          tabBarInactiveTintColor: "#242f66"
-         }}>
-            <Tab.Screen 
-              name="Reportes" 
-              component={Reportes}
-              options={{
-                tabBarIcon: ({ color, size }) => (
-                  <Ionicons name="document-text-outline" color={color} size={size} />
-                ),
-              }}
-            />
+  return (
+    <Tab.Navigator screenOptions={{ headerShown: false,
+      tabBarActiveBackgroundColor: "#242f66",
+      tabBarActiveTintColor: "white",
+      tabBarInactiveTintColor: "#242f66"
+    }}>
 
-            <Tab.Screen 
-              name="Tickets"
-              component={Tickets} 
-              options={{
-                tabBarIcon: ({ color, size }) => (
-                  <Ionicons name="server-outline" color={color} size={size} />
-                ),
-              }}
-            />
-        </Tab.Navigator>
+    <Tab.Screen 
+      name="Reportes" 
+      component={Reportes}
+      options={{
+        tabBarIcon: ({ color, size }) => (
+          <Ionicons name="document-text-outline" color={color} size={size} />
+        ),
+      }}
+    />
+
+    <Tab.Screen 
+      name="Tickets"
+      component={Tickets} 
+      options={{
+        tabBarIcon: ({ color, size }) => (
+          <Ionicons name="server-outline" color={color} size={size} />
+        ),
+      }}
+    />
+    </Tab.Navigator>
   );
 }
 
