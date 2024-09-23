@@ -1,10 +1,10 @@
-import * as React from 'react';
 import { Text, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet } from 'react-native';
 import Reportes from './Reportes';
 import Tickets from './Tickets';
+import Solicitud from './Solicitud';
 
 const Tab = createBottomTabNavigator();
 
@@ -42,6 +42,16 @@ export default function Formulario() {
       }}
     />
 
+    <Tab.Screen
+      name="Solicitud"
+      component={Solicitud} 
+      options={{
+        tabBarIcon: ({ color, size }) => (
+          <Ionicons name="document" color={color} size={size} />
+        ),
+      }}
+    />
+
     <Tab.Screen 
       name="Tickets"
       component={Tickets} 
@@ -51,6 +61,8 @@ export default function Formulario() {
         ),
       }}
     />
+
+
     </Tab.Navigator>
   );
 }

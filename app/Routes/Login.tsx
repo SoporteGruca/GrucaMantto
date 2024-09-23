@@ -7,38 +7,38 @@ import { Alert } from "react-native";
 import { router, SplashScreen } from "expo-router";
 import axios from "axios";
 
-// import { useUserContext } from "./UserContext";
+import AwesomeAlert from 'react-native-awesome-alerts';
+
+import { useUserContext } from "./UserContext";
 
 const Login = ({}) => {
-
-  const [contrasena, setContrasena] = useState("12345678");
+  const [contrasena, setContrasena] = useState("1234");
   const [Usuario, setUsuario] = useState("Oscar");
   // const [contrasena, setContrasena] = useState("");
   // const [Usuario, setUsuario] = useState("");
   // const {setNombreUsuario} = useUserContext(); 
   const [loading, setLoading] = useState(false); // Nuevo estado para el ActivityIndicator
-
-
+  
+  
   const entrar = async () => {
-
+    
     setLoading(true);
     try {
       const response = await axios.post('http://192.168.0.46:4000/login', {
         Usuario,
         contrasena,
       });
-
       const data = response.data;
-      
       if (data.success) {
         const nombreUsuario = data.user.NomUsuario;
-        // console.log(nombreUsuario);
         // setNombreUsuario(nombreUsuario);
         setUsuario("");
         setContrasena("");
         router.push("/Routes/Forms")
       } else {
-        Alert.alert("Credenciales inválidas");
+
+        // Alert.alert("Aviso","Credenciales inválidas");
+
       }
     } catch (error) {
       console.error("Error fetching data:", error);

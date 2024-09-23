@@ -4,22 +4,20 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import React, { useEffect, useState, useRef } from "react";
 import { StyleSheet, Text, View, ScrollView } from "react-native";
 import { Button, Icon } from 'react-native-paper';
-// import { useUserContext } from "./UserContext";
-import { Camera } from "expo-camera/legacy";
-// import { Camera } from "react-native-camera";
+// import { Camera } from "expo-camera/legacy";
+import { Camera } from 'expo-camera';
 import { CameraView } from 'expo-camera';
-import { Linking } from "react-native";
 import moment from "moment";
 import { Dropdown } from "react-native-element-dropdown";
 import axios from "axios";
-
 import AntDesign from '@expo/vector-icons/AntDesign';
-import RNPickerSelect from 'react-native-picker-select';
+import { Linking} from 'react-native';
 
 const Tab = createBottomTabNavigator();
 
 const Reportes = () => {
   //Datos
+  const [useReport, setuseReportData] = useState([{ }]);
   const [equipoData, setEquipoData] = useState([{ }]);
   const [marcaData, setMarcaData] = useState([{ }]);
   const [fallaData, setFallaData] = useState([{ }]);
@@ -29,13 +27,14 @@ const Reportes = () => {
   const [isCameraReady, setIsCameraReady] = useState(false);
 
   //Camara
-  const [hasCameraPermission, setHasCameraPermission] = useState({});
+  const [hasCameraPermission, setHasCameraPermission] = useState(null);
   // const [flash, stFlash] = useState(Camera.Constants.FlashMode.off);
   // const [type, SetType] = useState(Camera.Constants.Type.back);
   const [facing, setFacing] = useState<CameraType>('back');
   const [permission, requestPermission] = useCameraPermissions();
 
   //Valores
+  const [usuarioReport, setUsuarioReport] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [encargado, setEncargado] = useState("");
   const [equipo, setEquipo] = useState("");
@@ -72,6 +71,8 @@ const Reportes = () => {
             .toString()
             .padStart(4, "0")}`;
           setFolio(folioPredeterminado);
+          console.log(setFolio);
+          
           
         } else {
           console.error("El valor del recuento no es válido:", countValue);
@@ -92,7 +93,7 @@ const Reportes = () => {
 
     axios(config).then(function (response) {
       var count = Object.keys(response.data).length;      
-      let equipoArray = [];      
+      let equipoArray : any = [];      
         for (var i = 0; i < count; i++) {
           equipoArray.push({
             value: response.data[i].UbicaMaq,
@@ -100,6 +101,28 @@ const Reportes = () => {
           });
         }
         setUbiData(equipoArray);
+      })
+    .catch(function (error) {
+      console.log(error);
+    });
+  }, []);
+
+  useEffect(() => {
+    var config = {
+      method: "get",
+      url: `http://192.168.0.46:4000/users`,
+    };
+
+    axios(config).then(function (response) {
+      var count = Object.keys(response.data).length;      
+      let equipoArray = [];            
+        for (var i = 0; i < count; i++) {
+          equipoArray.push({
+            value: response.data[i].Usuario,
+            label: response.data[i].Usuario,
+          });
+        }        
+        setuseReportData(equipoArray);
       })
     .catch(function (error) {
       console.log(error);
@@ -158,6 +181,34 @@ const Reportes = () => {
   });
   }, []);
 
+  // const loadState = ( maquina : any) => {
+  //   var config = {  
+  //     method: "get",
+  //     // url: `http://192.168.0.46:4000/users`,
+  //     url: `http://192.168.0.46:4000/maquinasess/${maquina}`,
+  //   };
+
+  //   axios(config).then(function (response) {
+  //   const datos = response.data;
+
+  //   console.log(datos);
+  //   setUbiData(datos.map((item : any) => item["UbicaMaq"]));
+  //   setEncData(datos.map((item : any) => item["Encargado"]));
+
+  //   if(datos.length > 0) {
+  //     console.log(datos);
+      
+  //     setEncargado(datos[0]["Encargado"]); 
+  //     setUbi(datos[0]["UbicaMaq"]); 
+  //   }
+    
+  //   })
+  //   .catch(function (error) {
+  //     console.error("Error fetching data:", error);
+  //   });
+
+  // }
+
   useEffect(() => {
     var config = {
       method: "get",
@@ -187,7 +238,6 @@ const Reportes = () => {
     };
 
     axios(config).then(function (response) {
-      // console.log(JSON.stringify(response.data));
       var count = Object.keys(response.data).length;
       let marcaArray = [];
       for (var i = 0; i < count; i++) {
@@ -218,9 +268,9 @@ const Reportes = () => {
     })();
   }, []);
 
-  // const onCameraReady = () => {
-  //   setIsCameraReady(true);
-  //   };
+  const onCameraReady = () => {
+    setIsCameraReady(true);
+  };
 
   const takePicture = async () => {
 
@@ -228,15 +278,16 @@ const Reportes = () => {
     const camera = cameraRef.current;
     if (!camera) return;
 
-    // try {
-    //   const data : any = await camera.takePictureAsync({ base64: true, });
-    //   setFotoUri(data.uri);
-    //   console.log(data);
-    // } catch (error) {
-    //   console.log('Error:', error);
-    // }
+    try {
+      // const data : any = await camera.takePictureAsync({ base64: true, });
+      const data : any = await camera.takePictureAsync({ base64: true, });
+      setFotoUri(data.uri);
+      console.log(data);
+    } catch (error) {
+      console.log('Error:', error);
+    }
 
-    // alert("La foto no fue guardada, se sigue trajando en la reparacion.")
+    alert("La foto no fue guardada, se sigue trajando en la reparacion.")
   };
   if (hasCameraPermission === false) {
     return (
@@ -256,23 +307,24 @@ const Reportes = () => {
 
   const ambos = async () => {
 
-    // if (equipo === "" || marca === "" || descripcion === "" || encargado === "" || num === "") {
-    if ( equipo === "" ) {
+    if (usuarioReport === "" || equipo === "" || marca === "" || descripcion === "" || encargado === "" || num === "") {
+    // if ( equipo === "" ) {
       Alert.alert("Debe llenar todos los campos de la maquina a reportar");
     } else {
       try {
         await fetchCount();
         generarFolio();
         enviarDatos();
-        // setDescripcion("");
-        // setEquipo("");
-        // setNum("");
-        // setFalla("");
-        // setMarca("");
-        // setEncargado("");
-        // setDepto("");
-        // setUbi("");
-        // setFotoUri(null);
+        setUsuarioReport("");
+        setEquipo("");
+        setMarca("");
+        setDescripcion("");
+        setFalla("");
+        setEncargado("");
+        setNum("");
+        setDepto("");
+        setUbi("");
+        setFotoUri(null);
         await fetchCount();
         generarFolio();
         // openGmail();
@@ -289,40 +341,41 @@ const Reportes = () => {
     try {
       const fechaHora = moment().format("lll");
       const formData: any = new FormData();
+      
       // formData.append("image", {
       //   uri: image,
       //   type: "image/png",
       //   name: "imagen.png",
       // });<sw
 
-      // formData.append("fecha", fechaHora.toString());
-      // formData.append("usuario", "");
-      // formData.append("encargado", encargado.toString());
-      // formData.append("departamento", depto.toString());
-      // formData.append("id", num);
-      // formData.append("maquina", marca.toString());
-      // formData.append("clase", equipo.toString());
-      // formData.append("falla", falla);
-      // formData.append("ubicacion", ubi.toString());
-      // formData.append("descripcion", descripcion.toString());
-      // formData.append("estado", "Pendiente");
-      // formData.append("personal", "");
-      // formData.append("descripcionfalla", descripcion.toString());
-      // formData.append("acciones", "");
-      // formData.append("folio", folio.toString());
+      formData.append("fecha", fechaHora.toString());
+      formData.append("usuario", usuarioReport.toString());
+      formData.append("encargado", encargado.toString());
+      formData.append("departamento", depto.toString());
+      formData.append("id", num);
+      formData.append("maquina", marca.toString());
+      formData.append("clase", equipo.toString());
+      formData.append("falla", falla);
+      formData.append("ubicacion", ubi.toString());
+      formData.append("descripcion", descripcion.toString());
+      formData.append("estado", "Pendiente");
+      formData.append("personal", "");
+      formData.append("descripcionfalla", descripcion.toString());
+      formData.append("acciones", "");
+      formData.append("folio", folio.toString());
 
       console.log(formData);
       
       
-      const response = await axios.post(
-        "http://192.168.0.46:4000/maquinas",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      // const response = await axios.post(
+      //   "http://192.168.0.46:4000/maquinas",
+      //   formData,
+      //   {
+      //     headers: {
+      //       "Content-Type": "multipart/form-data",
+      //     },
+      //   }
+      // );
 
       Alert.alert("Reporte Enviado");
     } catch (error) {
@@ -330,23 +383,56 @@ const Reportes = () => {
     }
   };
 
-  // const openGmail = async () => {
-  //   const emailAddress = "reporteyfallas@gruca.mx";
-  //   const subject = `Se ha registrado un Reporte con el folio: ${folio}`;
-  //   const body = `Se ha enviado un Reporte de ${equipo} debido a que ${descripcion}`;
+  const openGmail = async () => {
+    const emailAddress = "reporteyfallas@gruca.mx";
+    const subject = `Se ha registrado un Reporte con el folio: ${folio}`;
+    const body = `Se ha enviado un Reporte de ${equipo} debido a que ${descripcion}`;
 
-  //   const mailtoUrl = `mailto:${emailAddress}?subject=${subject}&body=${body}`;
+    const mailtoUrl = `mailto:${emailAddress}?subject=${subject}&body=${body}`;
 
-  //   Linking.openURL(mailtoUrl);
-  // };
+    Linking.openURL(mailtoUrl);
+  };
 
-//   const onChangeHandler = event => {
-//     setEquipo(event.target.value);
-//  };
+  const onChangeHandler = (event : any) => {
+    setEquipo(event.target.value);
+ };
 
   return (
     <View style={styles.container}>
       <ScrollView>
+
+      <View style={styles.containerLineInside}>
+        <Text style={styles.text}>Usuario que reporta</Text>
+        <TextInput placeholder="Nombre del usuario..."
+          style={styles.boxBig}
+          onChange={(item : any) => {
+            setUsuarioReport(item.value);
+            handleState(item.value);
+          }}
+          value={usuarioReport}
+          />
+      </View>
+
+      {/* <Text style={styles.text}>Usuario que reporta</Text>
+        <Dropdown
+          style={[styles.dropdown]}
+          placeholderStyle={styles.placeholderStyle}
+          selectedTextStyle={styles.selectedTextStyle}
+          inputSearchStyle={styles.inputSearchStyle}
+          iconStyle={styles.iconStyle}
+          data={useReport}
+          search
+          maxHeight={200}
+          labelField="label"
+          valueField="value"
+          placeholder={!isFocus ? "Selecciona usuario que reporta" : "..."}
+          searchPlaceholder="Buscar..."
+          value={usuarioReport}
+          onChange={(item : any) => {
+            setUsuarioReport(item.value);
+            handleState(item.value);
+          }}
+        /> */}
 
         <Text style={styles.text}>Maquina a reportar</Text>      
         <Dropdown
@@ -369,6 +455,7 @@ const Reportes = () => {
             <AntDesign color="red" name="tool" size={25} />
           )}
           onChange={(item : any) => {
+            // loadState(item.value);
             setEquipo(item.value);
             handleState(item.value);
             setIsFocus(false);
@@ -395,6 +482,7 @@ const Reportes = () => {
           onChange={(item : any) => {
             setMarca(item.value);
             handleState2(item.value);
+            // loadState(item.value)
             setIsFocus(false);
           }}
         />
@@ -421,7 +509,7 @@ const Reportes = () => {
             setIsFocus(false);
         }}/>
 
-        <Text style={styles.text}> Ubicación </Text>
+        {/* <Text style={styles.text}> Ubicación </Text>
         <Dropdown
           style={[styles.dropdown]}
           placeholderStyle={styles.placeholderStyle}
@@ -433,7 +521,25 @@ const Reportes = () => {
           maxHeight={200}
           labelField="label"
           valueField="value"
-          placeholder={"Seleccione la falla..."}
+          placeholder={"Seleccione la ubicacion..."}
+          searchPlaceholder="Buscar..."
+          value={ubi}
+          onChange={(item : any) => {
+            
+        }}/> */}
+
+        <Dropdown
+          style={[styles.dropdown]}
+          placeholderStyle={styles.placeholderStyle}
+          selectedTextStyle={styles.selectedTextStyle}
+          inputSearchStyle={styles.inputSearchStyle}
+          iconStyle={styles.iconStyle}
+          data={ubiData}
+          search
+          maxHeight={200}
+          labelField="label"
+          valueField="value"
+          placeholder={"Seleccione la ubicacion..."}
           searchPlaceholder="Buscar..."
           value={ubi}
           onChange={(item : any) => {
@@ -452,7 +558,7 @@ const Reportes = () => {
           maxHeight={200}
           labelField="label"
           valueField="value"
-          placeholder={"Seleccione la falla..."}
+          placeholder={"Seleccione al operador..."}
           value={encargado}
           onChange={(item : any) => {
             setEncargado(item.value);
@@ -650,8 +756,6 @@ const styles = StyleSheet.create({
       borderWidth: 1, // Añade un borde de 1 píxel
       borderColor: "gray", // Color del borde
       paddingHorizontal: 10,
-      marginTop: 5,
-      marginLeft: 5,
       marginBottom: 20,
       backgroundColor: "#fff",
       minHeight: 40,
