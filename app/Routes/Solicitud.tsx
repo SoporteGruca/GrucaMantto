@@ -1,9 +1,9 @@
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native'
+import { View, Text, StyleSheet, TextInput, Alert } from 'react-native'
 import React, { useState, useEffect } from 'react'
-import axios from 'axios'
-import { useUserContext } from './UserContext'
-import moment from 'moment'
+import { Button } from 'react-native-paper';
 import { Linking} from 'react-native';
+import moment from 'moment'
+import axios from 'axios'
 
 const Solicitud = () => {
     // const { nombreUsuario, setNombreUsuario } = useUserContext();
@@ -14,11 +14,11 @@ const Solicitud = () => {
     const [depto, setDeptoValue] = useState('');
     const [nominas, setNomina] = useState('');
     const [count, setCount] = useState({});
-    const [folio, setFolio] = useState("");
+    const [folio, setFolio] = useState('');
     const [deptos, setDepto] = useState('');
 
-    const nombreUsuario = "Oscar Alonso";
-    const encargado = "Staff Sistemas";
+    const nombreUsuario = 'Oscar Alonso';
+    const encargado = 'Staff Sistemas';
 
     useEffect(() => {
         fetchCount();
@@ -29,7 +29,7 @@ const Solicitud = () => {
         const response = await axios.get('http://192.168.0.46:4000/foliosm');
         const recordset = response.data;
         if (Array.isArray(recordset) && recordset.length > 0) {
-        const countValue = recordset[0][""];
+        const countValue = recordset[0][''];
         
         if (typeof countValue === 'number' || typeof countValue === 'string') {
             setCount(countValue);
@@ -81,8 +81,8 @@ const Solicitud = () => {
             const response = await axios.post('http://192.168.0.46:4000/tickets', {
             tipo: 'Solicitud',
             fecha: fechaHora,
-            // usuario: "Oscar",
-            // encargado: "Staff sisemas",
+            // usuario: 'Oscar',
+            // encargado: 'Staff sisemas',
             usuario: nombreUsuario,
             encargado: nombreUsuario,
             nomina: nominas.toString(),
@@ -128,104 +128,105 @@ const Solicitud = () => {
             setUbicacion('')
             await fetchCount();
             generarFolio();
-            Alert.alert("Alert", "Reporte Enviado")
+            Alert.alert('Alert', 'Reporte Enviado')
             openGmail()
         }
     }
     return (
-    <View style={styles.contai}>
-        <View style={styles.container}>
-            <View>
-                <Text style={styles.Text}>Titulo del reporte</Text>
-                <TextInput
-                    value={solicitar}
-                    onChangeText={setSolicitar}
-                    placeholder="Equipo o Servicio a reportar " style={styles.boxlarge}></TextInput>
-                <Text style={styles.Text}>Descripcion de la falla o necesidad </Text>
-                <TextInput multiline  // Esta prop permite el ingreso de múltiples líneas
-                    numberOfLines={4}
-                    value={descripcion}
-                    onChangeText={setDescripcion}
-                    placeholder="Describe tu reporte o solicitud" style={styles.boxsmall}></TextInput>
-                <Text style={styles.Text}> Ubicación</Text>
-                <TextInput multiline  // Esta prop permite el ingreso de múltiples líneas
-                    numberOfLines={4}
-                    value={ubicacion}
-                    onChangeText={setUbicacion}
-                    placeholder="Lugar en donde se requiere el apoyo" style={styles.boxsmall}></TextInput>
-            </View>
-            <View style={styles.containerSeparate}>
-                <TouchableOpacity onPress={eventos}>
-                <Text style={styles.boton} >Abrir Ticket</Text>
-                </TouchableOpacity>
-            </View>
+    <View style={styles.container}>
+        
+        <Text style={styles.Text}>Titulo del reporte</Text>
+        <TextInput style={styles.boxSmall}
+            value={solicitar}
+            onChangeText={setSolicitar}
+            placeholder='Solicitud a reportar '>
+        </TextInput>
+
+        <Text style={styles.Text}>Descripcion de la falla o necesidad </Text>
+        <TextInput style={styles.boxBig}
+            multiline
+            numberOfLines={4}
+            value={descripcion}
+            onChangeText={setDescripcion}
+            placeholder='Describe tu reporte o solicitud'>
+        </TextInput>
+
+        <Text style={styles.Text}> Ubicación</Text>
+        <TextInput style={styles.boxBig}
+            multiline
+            numberOfLines={4}
+            value={ubicacion}
+            onChangeText={setUbicacion}
+            placeholder='Lugar en donde se requiere el apoyo'>
+        </TextInput>
+        
+        <View style={styles.containerMidEvent}>
+            <Button onPress={ eventos }
+                icon='file'
+                mode='contained'
+                buttonColor='#b01212'>
+                Abrir ticket
+            </Button>
         </View>
+
     </View> 
     )
 };
 
 const styles = StyleSheet.create({
-contai:{
-    width: '100%',    
-    alignItems:'center',
-},
-container:{
-    width: '100%',
-    marginTop: 10,   
-},
-boxlarge:{
-    width: 360,
-    height: 40,
-    borderWidth: 1, // Añade un borde de 1 píxel
-    borderColor: 'gray', // Color del borde
-    borderRadius: 4,
-    marginTop:5,
-    marginLeft: 20,
-    paddingLeft: 10,
-    marginBottom: 20,
-    backgroundColor: '#fff'
-
-},
-
-containerSeparate:{
-    flexDirection: 'row',
-    justifyContent: "space-between",
-    marginRight: 23,
-    marginTop: 250
-},
-
-Text:{
-    marginLeft:20,
-    fontSize: 16,
-    fontWeight: 'bold'
-},
-
-boton:{
-    backgroundColor: 'salmon', 
-    justifyContent: 'center',
-    textAlign: 'center',
-    color:'white', 
-    borderRadius:4, 
-    padding:15,
-    width: 350,
-    marginLeft:23
-},
-boxsmall:{
-    width: 360,
-    borderWidth: 1, // Añade un borde de 1 píxel
-    borderColor: 'gray', // Color del borde
-    paddingHorizontal: 10,
-    marginTop:5,
-    marginLeft: 20,
-    paddingTop: 0,
-    marginBottom: 20,
-    borderRadius: 4,
-    backgroundColor: '#fff',
-    minHeight: 100,
-    maxHeight: 100
-},
-
-
+    container:{
+        backgroundColor:'#e8e8e8',
+        alignItems:'center',
+        height: '100%',
+        width: '100%',
+        padding: 15,
+    },
+    boxlarge:{
+        width: '100%',
+        height: 40,
+        borderWidth: .5,
+        borderRadius: 20,
+        backgroundColor: '#fff'
+    },
+    containerMidEvent:{
+        width: 150,
+        alignSelf:'center',
+        marginVertical: '10 %'
+    },
+    Text:{
+        fontSize: 18,
+        marginVertical:'2%',
+        
+    },
+    buttonEvent:{
+        color:'white',
+        backgroundColor: '#b01212',
+        borderRadius:4, 
+        padding:15,
+        width: 350,
+        marginLeft:23
+    },
+    boxSmall:{
+        backgroundColor: '#fff',
+        paddingHorizontal: 10,
+        marginVertical: '2%',
+        borderColor: 'gray', 
+        borderRadius: 20,
+        borderWidth: .5, 
+        width: '100%',
+        height: 40,
+    },
+    boxBig:{
+        backgroundColor: '#fff',
+        paddingHorizontal: 10,
+        marginVertical: '2%',
+        borderColor: 'gray',
+        borderRadius: 20,
+        borderWidth: .5, 
+        width: '100%',
+        minHeight: 40,
+        maxHeight: 60,
+    },
 })
 
 export default Solicitud 

@@ -1,15 +1,10 @@
-import { View, Text, Image, TouchableOpacity } from "react-native";
-import { Button, TextInput } from 'react-native-paper';
+import { View, Text, Image, TouchableOpacity, Alert, TextInput } from "react-native";
+import { Button, Icon } from 'react-native-paper';
 import {ActivityIndicator} from 'react-native';
 import { StyleSheet } from "react-native";
-import React, { useState, useEffect, useCallback } from "react";
-import { Alert } from "react-native";
-import { router, SplashScreen } from "expo-router";
+import React, { useState, useEffect } from "react";
+import { router } from "expo-router";
 import axios from "axios";
-
-import AwesomeAlert from 'react-native-awesome-alerts';
-
-import { useUserContext } from "./UserContext";
 
 const Login = ({}) => {
   const [contrasena, setContrasena] = useState("1234");
@@ -37,7 +32,7 @@ const Login = ({}) => {
         router.push("/Routes/Forms")
       } else {
 
-        // Alert.alert("Aviso","Credenciales inválidas");
+        Alert.alert("Aviso","Credenciales inválidas");
 
       }
     } catch (error) {
@@ -68,26 +63,20 @@ const Login = ({}) => {
 
           <Text style={styles.textos}>Iniciar Sesion</Text>
 
-          <View style={styles.textinput2}>
-            <TextInput
-              label="Usuario"
-              style={styles.textInput}
-              placeholder="Usuario"
-              value={Usuario}
-              onChangeText={setUsuario}
-            />
-          </View>
+          
+          <TextInput style={styles.textInput}
+            placeholder="Usuario"
+            value={Usuario}
+            onChangeText={setUsuario}
+          >
+          </TextInput>
 
-          <View>
-            <TextInput
-              label="Contraseña"
-              style={styles.textInput}
-              placeholder="Contraseña"
-              secureTextEntry={true}
-              value={contrasena}
-              onChangeText={setContrasena}
-            />
-          </View>
+          <TextInput style={styles.textInput}
+            placeholder="Contraseña"
+            secureTextEntry={true}
+            value={contrasena}
+            onChangeText={setContrasena}
+          />
 
 
           <View>
@@ -120,10 +109,6 @@ const styles = StyleSheet.create({
     height: "100%",
     width:"100%",
     justifyContent: "flex-end",
-  },
-  container2: {
-    height: "100%",
-    width:"100%",
   },
   containerLogo: {
     alignItems: "center",
@@ -167,12 +152,13 @@ const styles = StyleSheet.create({
   },
   textInput: {
     width: 250,
-    height: 40,
-    borderRadius: 5,
-  },
-  textinput2: {
-    marginBottom: 40,
-    marginTop: 30,
+    height: 50,
+    borderRadius: 20,
+    marginVertical:20,
+    backgroundColor: 'white',
+    textAlign:'center',
+    borderBlockColor: 'orange',
+    
   },
   txtBoton: {
     color: "white",
@@ -189,6 +175,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding:20,
-  },
+  }
 });
 export default Login;
