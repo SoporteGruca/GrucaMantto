@@ -1,10 +1,11 @@
-import { TextInput, Image, Alert, Linking} from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StyleSheet, Text, View, ScrollView } from 'react-native';
+import { TextInput, Image, Alert, Linking, Platform } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import React, { useEffect, useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
 import { Button } from 'react-native-paper';
 import { Camera } from 'expo-camera';
 import moment from 'moment';
@@ -98,27 +99,27 @@ const Reportes = () => {
     });
   }, []);
 
-  useEffect(() => {
-    var config = {
-      method: 'get',
-      url: `http://192.168.0.46:4000/users`,
-    };
+  // useEffect(() => {
+  //   var config = {
+  //     method: 'get',
+  //     url: `http://192.168.0.46:4000/users`,
+  //   };
 
-    axios(config).then(function (response) {
-      var count = Object.keys(response.data).length;      
-      let equipoArray = [];            
-        for (var i = 0; i < count; i++) {
-          equipoArray.push({
-            value: response.data[i].Usuario,
-            label: response.data[i].Usuario,
-          });
-        }        
-        setuseReportData(equipoArray);
-      })
-    .catch(function (error) {
-      console.log(error);
-    });
-  }, []);
+  //   axios(config).then(function (response) {
+  //     var count = Object.keys(response.data).length;      
+  //     let equipoArray = [];            
+  //       for (var i = 0; i < count; i++) {
+  //         equipoArray.push({
+  //           value: response.data[i].Usuario,
+  //           label: response.data[i].Usuario,
+  //         });
+  //       }        
+  //       setuseReportData(equipoArray);
+  //     })
+  //   .catch(function (error) {
+  //     console.log(error);
+  //   });
+  // }, []);
 
   useEffect(() => {
     var config = {
@@ -187,7 +188,7 @@ const Reportes = () => {
   //   setEncData(datos.map((item : any) => item['Encargado']));
 
   //   if(datos.length > 0) {
-  //     console.log(datos);
+  //     console.log(datos);f
       
   //     setEncargado(datos[0]['Encargado']); 
   //     setUbi(datos[0]['UbicaMaq']); 
@@ -259,34 +260,17 @@ const Reportes = () => {
     })();
   }, []);
 
-  const onCameraReady = () => {
-    setIsCameraReady(true);
-  };
-
   const deletePicture = async() =>{
-
     setFotoUri(null);
-    setImage('https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster');
-    
-    console.log('Foto borrada');
-    
+    setImage('https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster');  
   }
 
   const takePicture = async () => {
-
-    const options = {
-      title: 'Selecciona una imagen',
-      storageOptions:{
-        skipBackup: true,
-        path: 'images'
-      }
-    }
-
-    let result = await ImagePicker.launchCameraAsync({
+    const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       // allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.2,
+      // aspect: [4, 3],
+      quality: .1,
     });
 
     if (!result.canceled) {
@@ -303,46 +287,48 @@ const Reportes = () => {
   }
 
   const ambos = async () => {
-
-    if (usuarioReport === '' || equipo === '' || marca === '' || descripcion === '' || encargado === '' || num === '') {
+    if (usuarioReport === '') {
+    // if (usuarioReport === '' || equipo === '' || marca === '' || descripcion === '' || encargado === '' || num === '') {
       Alert.alert('Debe llenar todos los campos de la maquina a reportar');
     } else {
       try {
         await fetchCount();
         generarFolio();
         enviarDatos();
-        setUsuarioReport('');
-        setEquipo('');
-        setMarca('');
-        setDescripcion('');
-        setFalla('');
-        setEncargado('');
-        setNum('');
-        setDepto('');
-        setUbi('');
-        setFotoUri(null);
+
+        // setUsuarioReport('');
+        // setEquipo('');
+        // setMarca('');
+        // setDescripcion('');
+        // setFalla('');
+        // setEncargado('');
+        // setNum('');
+        // setDepto('');
+        // setUbi('');
+        // setFotoUri(null);
+        // setImage('https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster');
+
         await fetchCount();
         generarFolio();
-        openGmail();
+
+        // openGmail();
+
         Alert.alert('Aviso', 'Reporte Enviado');
       } catch (error) {
         console.error('Error:', error);
       }
     }
-
   };
 
   const enviarDatos = async () => {
-
     try {
       const fechaHora = moment().format('lll');
       const formData: any = new FormData();
       formData.append('image', {
         uri: image,
-        type: 'image/png',
-        name: 'imagen.png',
+        type: 'image/jpg',
+        name: 'imagen.jpg',
       });
-
       formData.append('fecha', fechaHora);
       formData.append('usuario', usuarioReport);
       formData.append('encargado', encargado);
@@ -358,20 +344,17 @@ const Reportes = () => {
       formData.append('descripcionfalla', descripcion);
       formData.append('acciones', '');
       formData.append('folio', folio);
+      // console.log(formData);
       
+      // console.log('FormData', formData.get('image'));
+
       const response = await axios.post(
-        'http://192.168.0.46:4000/maquinas',
-        formData,
-        {
+        'http://192.168.0.46:4000/maquinas', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
-        }
-      );
+        });
 
-      console.log(response);
-
-      Alert.alert('Reporte Enviado');
     } catch (error) {
       console.error('Error al realizar la solicitud POST:', error);
     }
@@ -392,9 +375,9 @@ const Reportes = () => {
 
   };
 
-  const onChangeHandler = (event : any) => {
-    setEquipo(event.target.value);
-  };
+  // const onChangeHandler = (event : any) => {
+  //   setEquipo(event.target.value);
+  // };
 
   return (
     <View style={styles.container}>
@@ -404,9 +387,9 @@ const Reportes = () => {
         <Text style={styles.text}>Usuario que reporta</Text>
         <TextInput placeholder='Nombre del usuario...'
           style={styles.boxBig}
-          onChange={(item : any) => {
-            setUsuarioReport(item.value);
-            handleState(item.value);
+          onChangeText={(text : any) => {
+            setUsuarioReport(text);
+            handleState(text);
           }}
           value={usuarioReport}
           />
@@ -602,11 +585,10 @@ const Reportes = () => {
 
         <View>
 
-          <Button onPress={takePicture}> 
-            {image && <Image source={{ uri: image }} />}
-          </Button>
+          
+          {image && <Image source={{ uri : image }} />}
           <Image style = { styles.imagenContainer }
-          source = {{ uri: image}}
+          source = {{ uri : image }}
           >
           </Image>
 
@@ -650,6 +632,18 @@ const Reportes = () => {
 }
 
 export default Reportes
+
+const iswindows = Platform.OS === 'windows';
+if ( iswindows ) {
+  const stylesW = StyleSheet.create({
+    container: {
+      backgroundColor:'#e8e8e8',
+      height: '100%',
+      width:'50%',
+      padding: 15,
+    },
+  })
+};
 
 const styles = StyleSheet.create({
     container: {
@@ -742,10 +736,14 @@ const styles = StyleSheet.create({
       marginLeft: 20,
       fontSize: 16,
       fontWeight: 'bold',
+      marginVertical:'2%'
     },
     imagenContainer: {
       maxWidth:'100%',
       minWidth:300,
       height: 300,
+      marginVertical:'2%',
+      resizeMode:"contain",
+      borderRadius: 10,
     },
 });
