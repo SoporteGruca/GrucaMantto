@@ -1,10 +1,7 @@
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, Text, StyleSheet, TextInput, Image }  from 'react-native';
 import { TouchableOpacity, ScrollView } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import React, { useState, useEffect } from 'react';
-import * as ImagePicker from 'expo-image-picker';
-import { Button } from 'react-native-paper';
 import RNFetchBlob from "rn-fetch-blob";
 import { Alert } from 'react-native';
 import moment from 'moment';
@@ -29,6 +26,7 @@ const Tickets= () => {
   const [repsol, setRepsol] = useState('');
   const [motivo, setMotivo] = useState('');
   const [estado, setEstado] = useState('');
+  const [foto, setFoto] = useState(null);
   const [fecha, setFecha] = useState('');
   const [causa, setCausa] = useState('');
   // const {nombreUsuario, setNombreUsuario } = useUserContext();
@@ -41,22 +39,20 @@ const Tickets= () => {
   //isFocus
   const [isFocus, setIsFocus] = useState(false);
 
-  const handleState = (folio : any) => {
+  const handleState = (folio : string) => {
     var config = {
       method: 'get',
       url: `http://192.168.0.46:4000/maquinases/${folio}`,
     };
-
+    loadImage(folio);
     axios(config).then(function (response) {
       const datos = response.data;
-      
       setRepsolData(  datos.map((item : any) => item['Maquina']));
       setFechaData(   datos.map((item : any) => item['Fecha Inicio']));
       setMotivoData(  datos.map((item : any) => item['Descripcion de Incidencia']));
       setAtencionData(datos.map((item : any) => item['Atencion de Ticket']));
       setCausaData(   datos.map((item : any) => item['Causa Raiz']));
       setAccionesData(datos.map((item : any) => item['Acciones a Seguir']));
-      
       if (datos.length > 0) {
         setRepsol(  datos[0]['Maquina']);
         setFecha(   datos[0]['Fecha Inicio']);
@@ -64,79 +60,111 @@ const Tickets= () => {
         setAtencion(datos[0]['Atencion de Ticket']);
         setCausa(   datos[0]['Causa Raiz']);
         setAcciones(datos[0]['Acciones a Seguir']);
-      }
-
-      fetch(`http://192.168.0.46:4000/idPicture/${folio}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'image/jpeg'
-        }
+      }      
       })
-      .then(response => response.blob())
-      .then((blob : any) => {
-        // const filePath = RNFetchBlob.fs.dirs.DocumentDir + '/image.jpg';
-        // RNFetchBlob.fs.writeFile(filePath, blob, 'base64');
-        // const imageUri = 'file://' + filePath;
-        // console.log('Image: ', imageUri);
-        // setFotoUri(imageUri);
-        // const base64Imagen = RNFetchBlob.base64.encode(blob);
-        // const imageUri =  `data:image/jpeg;base64,${base64Imagen}`
-        // console.log('Image: ', imageUri);
-        // setFotoUri(imageUri);
-        
-      })
-      .catch(error => console.error(error));
-
-      // const imagenUrl = `http://192.168.0.46:4000/idPicture/${folio}`;
-      // axios.get(imagenUrl, { responseType: 'arraybuffer' })
-      // .then(responsePicture => {
-
-      //   console.log('Response Pic: ', responsePicture );
-        
-      //   // const imagen = Buffer.from(response.data, 'base64').toString('binary');
-      //   // console.log(imagen);
-      //   // console.log('Imagen:  ', response);
-      //   // const imagen = response.data;
-      //   // console.log('Imagen:  ', imagen); //Problema data no encontrada
-      //   // const blob = new Blob([imagen], { type: 'image/jpeg' });
-      //   // console.log('Blob:  ', blob);
-      //   // const url = URL.createObjectURL(blob);
-      //   // setFotoUri(url);
-      // })
-      // .catch(error => {
-      //   console.error('Error al obtener la imagen:', error);
-      // });
-
-    })
     .catch(function (error) {
       console.error('Error fetching data:', error);
     });
   };
 
-  const fetchImage = ( folio : any ) => {
+  const loadImage =  async ( folio : string ) => {
+    fetch(`http://192.168.0.46:4000/idPicture/${folio}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'image/jpeg'
+      }
+    })
+    .then(response => response.text())
+    .then((base64Imagen) => {
+      const imageUri = `data:image/jpeg;base64,${base64Imagen}`;
+      setFotoUri(imageUri);
+      console.log('Blob Info:', imageUri);
+    })
+      .catch(function(error) {
+        console.error('Error fetching data:', error);
+      });
 
-    // const response = axios.get(`http://192.168.0.46:4000/idPicture/${folio}`);
+  }
 
-      // const response = await fetch(`http://192.168.0.46:4000/idPicture/${folio}`);
-      // console.log('Response: ', response);
-      // const imgPicture = response.data;
-      // const base64Imagen = await convertirImagenABase64( imgPicture );
-      // console.log( base64Imagen );
-    
-  };
+  // const handleState = (folio : string) => {
+  //   var config = {
+  //     method: 'get',
+  //     url: `http://192.168.0.46:4000/maquinases/${folio}`,
+  //   };
 
-  // const convertirImagenABase64 = async (imagen : any) => {
-  //   const reader = new FileReader();
-  //   reader.readAsDataURL(imagen);
-  //   const base64Imagen = await new Promise((resolve, reject) => {
-  //       reader.onload = () => {
-  //           resolve(reader.result);
-  //       };
-  //       reader.onerror = () => {
-  //           reject(reader.error);
-  //       };
+  //   axios(config).then(function (response) {
+  //     const datos = response.data;
+      
+  //     setRepsolData(  datos.map((item : any) => item['Maquina']));
+  //     setFechaData(   datos.map((item : any) => item['Fecha Inicio']));
+  //     setMotivoData(  datos.map((item : any) => item['Descripcion de Incidencia']));
+  //     setAtencionData(datos.map((item : any) => item['Atencion de Ticket']));
+  //     setCausaData(   datos.map((item : any) => item['Causa Raiz']));
+  //     setAccionesData(datos.map((item : any) => item['Acciones a Seguir']));
+      
+  //     if (datos.length > 0) {
+  //       setRepsol(  datos[0]['Maquina']);
+  //       setFecha(   datos[0]['Fecha Inicio']);
+  //       setMotivo(  datos[0]['Descripcion de Incidencia']);
+  //       setAtencion(datos[0]['Atencion de Ticket']);
+  //       setCausa(   datos[0]['Causa Raiz']);
+  //       setAcciones(datos[0]['Acciones a Seguir']);
+  //     }
+
+  //     // RNFetchBlob.config ({
+  //     //   fileCache: true,        
+  //     // });
+
+  //     fetch(`http://192.168.0.46:4000/idPicture/${folio}`, {
+  //       method: 'GET',
+  //       headers: {
+  //         'Content-Type': 'image/jpeg'
+  //       }
+  //       })
+  //       .then(response => response.blob())
+  //       .then((blob : any) => {
+  //         // setFotoUri('https://img.freepik.com/free-vector/illustration-gallery-icon_53876-27002.jpg?w=740&t=st=1727896013~exp=1727896613~hmac=0711966066da9f7d0af0b761e2bf05a7fdd395b712d5cda9daabef9664090381');
+
+  //         const buffer = require('buffer');
+  //         const blobUtil = require('blob-util');
+
+  //         const blobData = {"_data": {"__collector": {}, "blobId": "c4d9affc-b451-40ec-b0e3-5a03c4926f68", "offset": 0, "size": 21287}};
+  //         // const blobData = blob.data;
+  //         console.log(blobData);
+          
+
+  //         const blobIma = blobUtil.blobFromBuffer(buffer.from(blobData._data.blobId, 'hex'));
+  //         const imageUri = URL.createObjectURL(blob);
+  //         setFotoUri(imageUri);
+  //         console.log(blobIma);
+          
+  //         // const img = new Image();
+  //         // img.src = URL.createObjectURL(blob);
+
+  //         // Ahora puedes utilizar la imagen en un elemento HTML
+  //         // const imgElement = document.getElementById('myImage');
+  //         // imgElement.src = img.src;
+          
+  //         // const imagee : any = URL.createObjectURL(blob);
+  //         // const reader = new FileReader();
+  //         // reader.onload = () => {
+  //         //   const base64Imagen = reader.result;
+  //         //   // console.log(base64Imagen);
+  //         //   console.log(blob);
+  //         // setFotoUri(`data:image/jpeg;base64,${base64Imagen}`);
+  //         // console.log('Foto URI:', fotoUri); // Agrega esto para verificar el valor de fotoUri
+  //         // };
+  //         // reader.readAsDataURL(blob);
+
+
+  //       })
+  //       .catch(function(error) {
+  //         console.error('Error fetching data:', error);
+  //       });
+  //     })
+  //   .catch(function (error) {
+  //     console.error('Error fetching data:', error);
   //   });
-  //   return base64Imagen;
   // };
 
   useEffect(() => {
@@ -157,7 +185,6 @@ const Tickets= () => {
           });
       }
       setNoTicketData(equipoArray);
-        
     })
     .catch(function (error) {
       console.log(error);
@@ -209,36 +236,6 @@ const Tickets= () => {
       console.log(error);
     });
   }, []);
-
-  // RNFetchBlob.config({
-  //   fileCache: true
-  // })
-  // .fetch("GET", "http://www.example.com/image.png")
-  // // the image is now dowloaded to device's storage
-  // .then(resp => {
-  //   // the image path you can use it directly with Image component
-  //   imagePath = resp.path();
-  //   return resp.readFile("base64");
-  // })
-  // .then(base64Data => {
-  //   // here's base64 encoded image
-  //   console.log(base64Data);
-  //   // remove the file from storage
-  //   return fs.unlink(imagePath);
-  // });
-
-  // useEffect(() => {
-  //   fetch(`http://192.168.0.46:4000/maquinases/${folioPicture}`)
-  //     .then(response => response.blob())
-  //     .then(blob => {
-  //       const uri = URL.createObjectURL(blob);
-  //       setImageUri(uri);
-  //       setLoading(false);
-  //     })
-  //     .catch(error => {
-  //       console.error(error);
-  //     });
-  // }, [imageId]);
 
   const cerrarTicket = async () => {
     if (estado === 'Liberado') {
@@ -369,9 +366,8 @@ const Tickets= () => {
       </View>
 
       <Image style = { styles.imagenContainer }
-        source = {{ uri: fotoUri}}>
+        source = {{ uri: fotoUri }}>
       </Image>
-
 
       <Text style={styles.textCenter}>Causa Raiz</Text>
       <TextInput value={causa}

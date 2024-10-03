@@ -29,14 +29,14 @@ const Reportes = () => {
   const [image, setImage] = useState('https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster');
 
   //Valores
-  const [usuarioReport, setUsuarioReport] = useState('');
-  const [descripcion, setDescripcion] = useState('');
-  const [encargado, setEncargado] = useState('');
-  const [equipo, setEquipo] = useState('');
-  const [marca, setMarca] = useState('');
-  const [depto, setDepto] = useState('');
-  const [num, setNum] = useState('');
-  const [ubi, setUbi] = useState('');
+  const [usuarioReport, setUsuarioReport] = useState('Oscar');
+  const [descripcion, setDescripcion] = useState('Mantenimiento Correctivo');
+  const [encargado, setEncargado] = useState('Alejandro Ramirez');
+  const [equipo, setEquipo] = useState('Balanceadora');
+  const [marca, setMarca] = useState('Balanceadora Hofmann (Leeson)');
+  const [depto, setDepto] = useState('Habilitado');
+  const [num, setNum] = useState('1234');
+  const [ubi, setUbi] = useState('Almacén');
   const [fotoUri, setFotoUri] = useState(null);
   // const {nombreUsuario, setNombreUsuario } = useUserContext();
   
@@ -147,8 +147,7 @@ const Reportes = () => {
   const generarFolio = () => {
     const nuevoNumero = parseInt(folio.split('-')[1]) + 1;
     const nuevoFolio = `RM-${nuevoNumero.toString().padStart(4, '0')}`;
-    setFolio(nuevoFolio);        
-    
+    setFolio(nuevoFolio);
   };
 
   useEffect(() => {
@@ -295,7 +294,6 @@ const Reportes = () => {
         await fetchCount();
         generarFolio();
         enviarDatos();
-
         // setUsuarioReport('');
         // setEquipo('');
         // setMarca('');
@@ -307,13 +305,10 @@ const Reportes = () => {
         // setUbi('');
         // setFotoUri(null);
         // setImage('https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster');
-
         await fetchCount();
         generarFolio();
-
         // openGmail();
-
-        Alert.alert('Aviso', 'Reporte Enviado');
+        // Alert.alert('Aviso', 'Reporte Enviado');
       } catch (error) {
         console.error('Error:', error);
       }
@@ -329,6 +324,17 @@ const Reportes = () => {
         type: 'image/jpg',
         name: 'imagen.jpg',
       });
+      // const imageBase64 = await fetch(image)
+      // .then(response => response.blob())
+      // .then(blob => {
+      //   const reader = new FileReader();
+      //   reader.onload = () => {
+      //     const base64Image = reader.result;
+      //     formData.append('image', base64Image);
+      //     // console.log('Base', base64Image); //Validar que la imagen esta siendo enviada de forma correcta
+      //   };
+      //   reader.readAsDataURL(blob);
+      // });
       formData.append('fecha', fechaHora);
       formData.append('usuario', usuarioReport);
       formData.append('encargado', encargado);
@@ -344,24 +350,59 @@ const Reportes = () => {
       formData.append('descripcionfalla', descripcion);
       formData.append('acciones', '');
       formData.append('folio', folio);
-      // console.log(formData);
-      
-      // console.log('FormData', formData.get('image'));
-
       const response = await axios.post(
         'http://192.168.0.46:4000/maquinas', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
         });
-
     } catch (error) {
       console.error('Error al realizar la solicitud POST:', error);
+      // console.error('Error al enviar la imagen:', error);
     }
   };
 
-  const openGmail = async () => {
 
+  // const enviarDatos = async () => {
+  //   try {
+  //     const formData: any = new FormData();
+  //     const fechaHora = moment().format('lll');
+  //     formData.append('image', {
+  //       uri: image,
+  //       type: 'image/jpg',
+  //       name: 'imagen.jpg',
+  //     });
+  //     formData.append('fecha', fechaHora);
+  //     formData.append('usuario', usuarioReport);
+  //     formData.append('encargado', encargado);
+  //     formData.append('departamento', depto);
+  //     formData.append('id', num);
+  //     formData.append('maquina', marca);
+  //     formData.append('clase', equipo);
+  //     formData.append('falla', falla);
+  //     formData.append('ubicacion', ubi);
+  //     formData.append('descripcion', descripcion);
+  //     formData.append('estado', 'Pendiente');
+  //     formData.append('personal', '');
+  //     formData.append('descripcionfalla', descripcion);
+  //     formData.append('acciones', '');
+  //     formData.append('folio', folio);
+  //     const response = await fetch('http://192.168.0.46:4000/maquinas', {
+  //       method: 'POST',
+  //       body: formData,
+  //       headers: {
+  //         'Content-Type': 'multipart/form-data',
+  //       },
+  //     });
+  //     const data = await response.json();
+  //     console.log(data);
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
+
+  const openGmail = async () => {
+  
     // const emailAddress = 'reporteyfallas@gruca.mx';
     const emailAddressTest = 'soporte.sistemas@gruca.mx';
     // const subject = `Se ha registrado un Reporte con el folio: ${folio}`;
@@ -374,10 +415,6 @@ const Reportes = () => {
     Linking.openURL(mailtoUrl);
 
   };
-
-  // const onChangeHandler = (event : any) => {
-  //   setEquipo(event.target.value);
-  // };
 
   return (
     <View style={styles.container}>
@@ -437,7 +474,6 @@ const Reportes = () => {
             <AntDesign color='red' name='tool' size={25} />
           )}
           onChange={(item : any) => {
-            // loadState(item.value);
             setEquipo(item.value);
             handleState(item.value);
             setIsFocus(false);
