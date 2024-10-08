@@ -7,11 +7,18 @@ import React, { useEffect, useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import { Button } from 'react-native-paper';
+import { autorun} from 'mobx';
 import { Camera } from 'expo-camera';
+// import { useContext } from 'react';
+// import store from './Store';
+// import { UserContext } from './store';
 import moment from 'moment';
 import axios from 'axios';
 
 const Tab = createBottomTabNavigator();
+// const { user } = useContext(UserContext);
+// console.log(user.nombreUsuario);
+
 
 const Reportes = () => {
   //Datos
@@ -21,25 +28,34 @@ const Reportes = () => {
   const [fallaData, setFallaData] = useState([{ }]);
   const [ubiData, setUbiData] = useState([{ }]);
   const [encData, setEncData] = useState([{ }]);
+  const [numData, setnumData] = useState([{ }]);
   const [falla, setFalla] = useState('');
   const [isCameraReady, setIsCameraReady] = useState(false);
-
   //Camara
   const [hasCameraPermission, setHasCameraPermission] = useState({});
   const [image, setImage] = useState('https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster');
-
-  //Valores
-  const [usuarioReport, setUsuarioReport] = useState('Oscar');
+  //Valores para Test
   const [descripcion, setDescripcion] = useState('Mantenimiento Correctivo');
-  const [encargado, setEncargado] = useState('Alejandro Ramirez');
-  const [equipo, setEquipo] = useState('Balanceadora');
   const [marca, setMarca] = useState('Balanceadora Hofmann (Leeson)');
+  const [encargado, setEncargado] = useState('Alejandro Ramirez');
+  const [usuarioReport, setUsuarioReport] = useState('Oscar');
+  const [equipo, setEquipo] = useState('Balanceadora');
   const [depto, setDepto] = useState('Habilitado');
-  const [num, setNum] = useState('1234');
-  const [ubi, setUbi] = useState('Almacén');
   const [fotoUri, setFotoUri] = useState(null);
+  const [ubi, setUbi] = useState('Almacén');
+  const [num, setNum] = useState('1234');
+//Valores
+  // const [usuarioReport, setUsuarioReport] = useState('');
+  // const [descripcion, setDescripcion] = useState('');
+  // const [encargado, setEncargado] = useState('');
+  // const [fotoUri, setFotoUri] = useState(null);
+  // const [equipo, setEquipo] = useState('');
+  // const [marca, setMarca] = useState('');
+  // const [depto, setDepto] = useState('');
+  // const [num, setNum] = useState('');
+  // const [ubi, setUbi] = useState('');
+  //Otro test
   // const {nombreUsuario, setNombreUsuario } = useUserContext();
-  
   //Funciones
   const [selectedValue, setSelectedValue] = useState(null);
   const [isFocus, setIsFocus] = useState(false);
@@ -48,16 +64,19 @@ const Reportes = () => {
 
   useEffect(() => {
     fetchCount();
+    loadMaquina();
+    camPermission();
+    loadUbicacion();
+    loadEncargado();
+    loadIncidencia();
   }, []);
-
+  
   const fetchCount = async () => {
     try {
       const response = await axios.get('http://192.168.0.46:4000/foliosm');
       const recordset = response.data;
-            
       if (Array.isArray(recordset) && recordset.length > 0) {
         const countValue = recordset[0][''];
-
         if (typeof countValue === 'number' || typeof countValue === 'string') {
           setCount(countValue);
           const numeroPredeterminado = countValue;
@@ -76,13 +95,51 @@ const Reportes = () => {
       console.error('Error al obtener el recuento:', error);
     }
   };
-
-  useEffect(() => {
+  const loadMaquina = (() => {
+    var config = {
+      method: 'get',
+      url: `http://192.168.0.46:4000/maquinas`,
+  };
+  axios(config).then(function (response) {
+    var count = Object.keys(response.data).length;
+    let equipoArray = [];
+    for (var i = 0; i < count; i++) {
+      equipoArray.push({
+        label: response.data[i].ClasMaq,
+        value: response.data[i].ClasMaq,
+      });    
+    }
+    setEquipoData(equipoArray);
+  })
+  .catch(function (error) {
+    console.log(error);
+  });
+  })
+  const loadEncargado = (() => {
+    var config = {
+      method: 'get',
+      url: `http://192.168.0.46:4000/encargado`,
+    };
+    axios(config).then(function (response) {      
+      var count = Object.keys(response.data).length;   
+      let equipoArray = [];      
+        for (var i = 0; i < count; i++) {
+          equipoArray.push({
+            value: response.data[i].Encargado,
+            label: response.data[i].Encargado,
+          });
+        }
+        setEncData(equipoArray);
+      })
+    .catch(function (error) {
+      console.log(error);
+    });
+  })
+  const loadUbicacion = (() => {
     var config = {
       method: 'get',
       url: `http://192.168.0.46:4000/ubicacion`,
     };
-
     axios(config).then(function (response) {
       var count = Object.keys(response.data).length;      
       let equipoArray : any = [];      
@@ -97,14 +154,12 @@ const Reportes = () => {
     .catch(function (error) {
       console.log(error);
     });
-  }, []);
-
+  })
   // useEffect(() => {
   //   var config = {
   //     method: 'get',
   //     url: `http://192.168.0.46:4000/users`,
   //   };
-
   //   axios(config).then(function (response) {
   //     var count = Object.keys(response.data).length;      
   //     let equipoArray = [];            
@@ -120,92 +175,16 @@ const Reportes = () => {
   //     console.log(error);
   //   });
   // }, []);
-
-  useEffect(() => {
-    var config = {
-      method: 'get',
-      url: `http://192.168.0.46:4000/encargado`,
-    };
-
-    axios(config).then(function (response) {      
-      var count = Object.keys(response.data).length;   
-      let equipoArray = [];      
-        for (var i = 0; i < count; i++) {
-          equipoArray.push({
-            value: response.data[i].Encargado,
-            label: response.data[i].Encargado,
-          });
-        }
-        setEncData(equipoArray);
-        
-      })
-    .catch(function (error) {
-      console.log(error);
-    });
-  }, []);
-
   const generarFolio = () => {
     const nuevoNumero = parseInt(folio.split('-')[1]) + 1;
     const nuevoFolio = `RM-${nuevoNumero.toString().padStart(4, '0')}`;
     setFolio(nuevoFolio);
   };
-
-  useEffect(() => {
-    var config = {
-      method: 'get',
-      url: `http://192.168.0.46:4000/maquinas`,
-  };
-
-  axios(config).then(function (response) {
-    var count = Object.keys(response.data).length;
-    let equipoArray = [];
-    for (var i = 0; i < count; i++) {
-      equipoArray.push({
-        label: response.data[i].ClasMaq,
-        value: response.data[i].ClasMaq,
-      });    
-    }
-    setEquipoData(equipoArray);
-  })
-  .catch(function (error) {
-    console.log(error);
-  });
-  }, []);
-
-  // const loadState = ( maquina : any) => {
-  //   var config = {  
-  //     method: 'get',
-  //     // url: `http://192.168.0.46:4000/users`,
-  //     url: `http://192.168.0.46:4000/maquinasess/${maquina}`,
-  //   };
-
-  //   axios(config).then(function (response) {
-  //   const datos = response.data;
-
-  //   console.log(datos);
-  //   setUbiData(datos.map((item : any) => item['UbicaMaq']));
-  //   setEncData(datos.map((item : any) => item['Encargado']));
-
-  //   if(datos.length > 0) {
-  //     console.log(datos);f
-      
-  //     setEncargado(datos[0]['Encargado']); 
-  //     setUbi(datos[0]['UbicaMaq']); 
-  //   }
-    
-  //   })
-  //   .catch(function (error) {
-  //     console.error('Error fetching data:', error);
-  //   });
-
-  // }
-
-  useEffect(() => {
+  const loadIncidencia = (() => {
     var config = {
       method: 'get',
       url: `http://192.168.0.46:4000/maquinasi`,
     };
-
     axios(config).then(function (response) {
       var count = Object.keys(response.data).length;
       let equipoArray = [];
@@ -220,14 +199,12 @@ const Reportes = () => {
     .catch(function (error) {
       console.log(error);
     });
-  }, []);
-
+  });
   const handleState = (clasmaq: any) => {
     var config = {
       method: 'get',
       url: `http://192.168.0.46:4000/maquinas/${clasmaq}`,
     };
-
     axios(config).then(function (response) {
       var count = Object.keys(response.data).length;
       let marcaArray = [];
@@ -243,40 +220,69 @@ const Reportes = () => {
       console.log(error);
     });
   };
-
   const handleState2 = (equipoMarca: any) => {
     var config = {
       method: 'get',
       url: `http://192.168.0.46:4000/maquinas/${equipo}/${equipoMarca}`,
-    };
+    }
+    //Secccion de ubucaicon charge.
+    var configMaq = {
+      method: 'get',
+      url: `http://192.168.0.46:4000/maqUbica/${equipoMarca}`,
+    }
+    axios(configMaq).then(function (response) {
+      const datos = response.data;
+      console.log(datos);
+      let ubiArray : any[] = [];
+      let encArray : any[] = [];
+      let numArray : any[] = [];
+      let depArray : any[] = [];
+      // console.log(response.data[0].UbicaMaq);
+      for (var i = 0; i < datos.length; i++) {
+        ubiArray.push({
+          value: datos[i].UbicaMaq,
+          label: datos[i].UbicaMaq,
+        });
+        encArray.push({
+          value: datos[i].Encargado,
+          label: datos[i].Encargado,
+        })
+        numArray.push({
+          value: datos[i].NumSerMaq,
+          label: datos[i].NumSerMaq,
+        })
+        depArray.push({
+          value: datos[i].DeptoMaq,
+          label: datos[i].DeptoMaq,
+        })
+      }
+      setUbi(ubiArray[0].value);
+      setNum(numArray[0].value);
+      setDepto(depArray[0].value);
+      setEncargado(encArray[0].value);
+    }).catch(function (error) {
+      console.log(error);
+    });
   }
-
-
-  useEffect(() => {
+  const camPermission = (() =>{
     (async () => {
       const cameraStatus = await Camera.requestCameraPermissionsAsync();
       setHasCameraPermission(cameraStatus.status === 'granted');
     })();
-  }, []);
-
+  });
   const deletePicture = async() =>{
     setFotoUri(null);
     setImage('https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster');  
   }
-
   const takePicture = async () => {
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
-      // allowsEditing: true,
-      // aspect: [4, 3],
-      quality: .1,
+      quality: 1,
     });
-
     if (!result.canceled) {
       setImage(result.assets[0].uri);
     }
   };
-
     if (hasCameraPermission === false) {
     return (
       <Text style={{ color: '#fff', fontSize: 16 }}>
@@ -284,31 +290,30 @@ const Reportes = () => {
       </Text>
     );
   }
-
   const ambos = async () => {
-    if (usuarioReport === '') {
-    // if (usuarioReport === '' || equipo === '' || marca === '' || descripcion === '' || encargado === '' || num === '') {
-      Alert.alert('Debe llenar todos los campos de la maquina a reportar');
+    // if (usuarioReport === '') {
+    if (usuarioReport === '' || equipo === '' || marca === '' || descripcion === '' || encargado === '' || num === '' || image === 'https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster' ) {
+      Alert.alert('Debe llenar todos los campos del formulario para generar el reportar');
     } else {
       try {
         await fetchCount();
         generarFolio();
         enviarDatos();
-        // setUsuarioReport('');
-        // setEquipo('');
-        // setMarca('');
-        // setDescripcion('');
-        // setFalla('');
-        // setEncargado('');
-        // setNum('');
-        // setDepto('');
-        // setUbi('');
-        // setFotoUri(null);
-        // setImage('https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster');
+        setUsuarioReport('');
+        setEquipo('');
+        setMarca('');
+        setDescripcion('');
+        setFalla('');
+        setEncargado('');
+        setNum('');
+        setDepto('');
+        setUbi('');
+        setFotoUri(null);
+        setImage('https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster');
+        Alert.alert(`Aviso`, `Se ha registrado un reporte con el folio: ${folio}. El reporte ha sido enviado correctamente.`);
         await fetchCount();
         generarFolio();
-        // openGmail();
-        // Alert.alert('Aviso', 'Reporte Enviado');
+        openGmail();
       } catch (error) {
         console.error('Error:', error);
       }
@@ -361,45 +366,6 @@ const Reportes = () => {
       // console.error('Error al enviar la imagen:', error);
     }
   };
-
-
-  // const enviarDatos = async () => {
-  //   try {
-  //     const formData: any = new FormData();
-  //     const fechaHora = moment().format('lll');
-  //     formData.append('image', {
-  //       uri: image,
-  //       type: 'image/jpg',
-  //       name: 'imagen.jpg',
-  //     });
-  //     formData.append('fecha', fechaHora);
-  //     formData.append('usuario', usuarioReport);
-  //     formData.append('encargado', encargado);
-  //     formData.append('departamento', depto);
-  //     formData.append('id', num);
-  //     formData.append('maquina', marca);
-  //     formData.append('clase', equipo);
-  //     formData.append('falla', falla);
-  //     formData.append('ubicacion', ubi);
-  //     formData.append('descripcion', descripcion);
-  //     formData.append('estado', 'Pendiente');
-  //     formData.append('personal', '');
-  //     formData.append('descripcionfalla', descripcion);
-  //     formData.append('acciones', '');
-  //     formData.append('folio', folio);
-  //     const response = await fetch('http://192.168.0.46:4000/maquinas', {
-  //       method: 'POST',
-  //       body: formData,
-  //       headers: {
-  //         'Content-Type': 'multipart/form-data',
-  //       },
-  //     });
-  //     const data = await response.json();
-  //     console.log(data);
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  // };
 
   const openGmail = async () => {
   
@@ -479,7 +445,6 @@ const Reportes = () => {
             setIsFocus(false);
           }}
         />
-
         <Text style={styles.text}>Descripcion de la maquina</Text>
         <Dropdown
           style={[styles.dropdown, isFocus && { borderColor: 'blue' }]}
@@ -504,7 +469,6 @@ const Reportes = () => {
             setIsFocus(false);
           }}
         />
-
         <Text style={styles.text}> Tipo Falla</Text>
         <Dropdown
           style={[styles.dropdown, isFocus && { borderColor: 'blue' }]}
@@ -526,7 +490,6 @@ const Reportes = () => {
             setFalla(item.value);
             setIsFocus(false);
         }}/>
-
         <Text style={styles.text}> Ubicación </Text>
         {/* <Dropdown
           style={[styles.dropdown]}
@@ -581,10 +544,7 @@ const Reportes = () => {
           onChange={(item : any) => {
             setEncargado(item.value);
         }}/>
-            
-
         <View style={styles.containerLine}>
-
           <View style={styles.containerLineInside}>
             <Text style={styles.text}> Numero de maquina</Text>
             <TextInput placeholder='Numero de maquina'
@@ -603,9 +563,7 @@ const Reportes = () => {
               value={depto}
             ></TextInput>
           </View>
-
         </View>
-
         <View style={styles.containerLineInside}>
           <Text style={styles.Text}> Descripción de la falla </Text>
           <TextInput
@@ -617,21 +575,13 @@ const Reportes = () => {
             value={descripcion}
           ></TextInput>
         </View>
-
-
         <View>
-
-          
           {image && <Image source={{ uri : image }} />}
           <Image style = { styles.imagenContainer }
-          source = {{ uri : image }}
-          >
+          source = {{ uri : image }}>
           </Image>
-
         </View>
-
         <View style={styles.containerButton}>
-
           <View style={styles.LineButtonBorrar}>
             <Button onPress={deletePicture}
               icon='delete'
@@ -640,7 +590,6 @@ const Reportes = () => {
               Borrar
             </Button>
           </View>
-
           <View style={styles.LineButtonTomarFoto}>
             <Button onPress={takePicture}
               icon='camera'
@@ -649,9 +598,7 @@ const Reportes = () => {
               Tomar foto
             </Button>
           </View>
-
         </View>
-
         <View style={styles.container}>
           <Button onPress={ambos}
             icon='mail'
@@ -660,26 +607,12 @@ const Reportes = () => {
             Reportar
           </Button>
         </View>
-
       </ScrollView>
     </View>
   );
-
 }
 
 export default Reportes
-
-const iswindows = Platform.OS === 'windows';
-if ( iswindows ) {
-  const stylesW = StyleSheet.create({
-    container: {
-      backgroundColor:'#e8e8e8',
-      height: '100%',
-      width:'50%',
-      padding: 15,
-    },
-  })
-};
 
 const styles = StyleSheet.create({
     container: {
@@ -748,6 +681,7 @@ const styles = StyleSheet.create({
       paddingHorizontal: 10,
       marginVertical: '2%',
       borderColor: 'gray', 
+      textAlign:"center",
       borderRadius: 20,
       borderWidth: .5, 
       width: '100%',
@@ -758,6 +692,7 @@ const styles = StyleSheet.create({
       paddingHorizontal: 10,
       marginVertical: '2%',
       borderColor: 'gray',
+      textAlign:"center",
       borderRadius: 20,
       borderWidth: .5, 
       width: '100%',

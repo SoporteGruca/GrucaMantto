@@ -1,22 +1,27 @@
-import { View, Text, Image, TouchableOpacity, Alert, TextInput } from "react-native";
+import { View, Text, Image, Alert, TextInput } from "react-native";
+import { useNavigation } from '@react-navigation/native';
+import React, { useState, useEffect, useContext, createContext } from "react";
 import { Button, Icon } from 'react-native-paper';
-import {ActivityIndicator} from 'react-native';
+import { ActivityIndicator } from 'react-native';
+// import { UserProvider } from "./UserContext";
+// import store from './Store';
 import { StyleSheet } from "react-native";
-import React, { useState, useEffect } from "react";
 import { router } from "expo-router";
 import axios from "axios";
 
+// import { UserContext } from './store';
+
+
 const Login = ({}) => {
+  const navigation = useNavigation();
   const [contrasena, setContrasena] = useState("1234");
+  // const { nombreUsuario } = useContext(UserContext);
   const [Usuario, setUsuario] = useState("Oscar");
   // const [contrasena, setContrasena] = useState("");
   // const [Usuario, setUsuario] = useState("");
-  // const {setNombreUsuario} = useUserContext(); 
   const [loading, setLoading] = useState(false); // Nuevo estado para el ActivityIndicator
-  
-  
+
   const entrar = async () => {
-    
     setLoading(true);
     try {
       const response = await axios.post('http://192.168.0.46:4000/login', {
@@ -25,62 +30,49 @@ const Login = ({}) => {
       });
       const data = response.data;
       if (data.success) {
-        const nombreUsuario = data.user.NomUsuario;
+        // const nombreUsuario = data.user.NomUsuario;
+        // console.log(data.user.NomUsuario);
+        // nombreUsuario({ nombre: Usuario });
         // setNombreUsuario(nombreUsuario);
-        setUsuario("");
-        setContrasena("");
-        router.push("/Routes/Forms")
+        router.push("/Routes/Forms");
+        // setContrasena("");
+        // setUsuario("");
       } else {
-
         Alert.alert("Aviso","Credenciales inválidas");
-
       }
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
-      setLoading(false); // Ocultar el ActivityIndicator
+      setLoading(false);
     }
-
+    
   };
-
   return (
     <View style={styles.container}>
-
       <View style={styles.containerLogo}>
-
         <Image style={styles.logo} source={require("../../assets/images/logo.png")} />
-
         <View style={styles.textoLogo}>
           <Text style={styles.titulo}>Mantenimiento</Text>
           <Text style={styles.titulo}>Maquinas</Text>
         </View>
-
       </View>
-      
       <View style={styles.containerImagen}>
         <Image style={styles.image} source={require("../../assets/images/login.png")} />
         <View style={styles.textInputContainer}>
-
           <Text style={styles.textos}>Iniciar Sesion</Text>
-
-          
           <TextInput style={styles.textInput}
             placeholder="Usuario"
             value={Usuario}
             onChangeText={setUsuario}
-          >
+            >
           </TextInput>
-
           <TextInput style={styles.textInput}
             placeholder="Contraseña"
             secureTextEntry={true}
             value={contrasena}
             onChangeText={setContrasena}
           />
-
-
           <View>
-
             <Button onPress={entrar}
               icon="login"
               style={styles.txtBoton}
@@ -88,19 +80,15 @@ const Login = ({}) => {
               buttonColor='#b83233'>
               Ingresar
             </Button>
-
           </View>
-
           {loading && (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" />
             </View>
           )}
-
         </View>
       </View>
     </View>
-    
   );
 };
 

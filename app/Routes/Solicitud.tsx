@@ -23,7 +23,6 @@ const Solicitud = () => {
     useEffect(() => {
         fetchCount();
         }, []);
-
     const fetchCount = async () => {
     try {
         const response = await axios.get('http://192.168.0.46:4000/foliosm');
