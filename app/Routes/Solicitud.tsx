@@ -22,20 +22,18 @@ const Solicitud = () => {
 
     useEffect(() => {
         fetchCount();
-        }, []);
+    }, []);
     const fetchCount = async () => {
     try {
         const response = await axios.get('http://192.168.0.46:4000/foliosm');
         const recordset = response.data;
         if (Array.isArray(recordset) && recordset.length > 0) {
         const countValue = recordset[0][''];
-        
         if (typeof countValue === 'number' || typeof countValue === 'string') {
             setCount(countValue);
             const numeroPredeterminado = countValue;
             const folioPredeterminado = `RE-${numeroPredeterminado.toString().padStart(4, '0')}`;
             setFolio(folioPredeterminado);
-            
         } else {
             console.error('El valor del recuento no es válido:', countValue);
         }
@@ -57,7 +55,6 @@ const Solicitud = () => {
     useEffect (() =>{
     var config = {
         method: 'get',
-        // url: `http://192.168.0.46:4000/equipos/${nombreUsuario}`,
         url: `http://192.168.0.46:4000/equipos/${nombreUsuario}`,
     };
     axios(config).then(function (response) {
@@ -80,8 +77,6 @@ const Solicitud = () => {
             const response = await axios.post('http://192.168.0.46:4000/tickets', {
             tipo: 'Solicitud',
             fecha: fechaHora,
-            // usuario: 'Oscar',
-            // encargado: 'Staff sisemas',
             usuario: nombreUsuario,
             encargado: nombreUsuario,
             nomina: nominas.toString(),

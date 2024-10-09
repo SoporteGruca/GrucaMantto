@@ -35,6 +35,7 @@ const Tickets = () => {
   const [fecha, setFecha] = useState('');
   const [causa, setCausa] = useState('');
   const [folio, setFolio] = useState('');
+  let levelAcces = '';
   // const {nombreUsuario, setNombreUsuario } = useUserContext();
   const estadosData = [ 
     { label: 'En progreso...', value: 'En progreso...' },
@@ -64,36 +65,33 @@ const Tickets = () => {
     };
     axios(config).then(function (response) {
       var count = Object.keys(response.data).length;
-      console.log(response.data);
-      
+      // console.log(response.data);
       const test = {
         Usuario: 'Test',
         nivelAcceso: 'Operador'
       }
       for (var i = 0; i < count; i++) {
         let user = response.data[i]['Usuario'];
-        let levelAcces = response.data[i]['nivelAcceso'];
+        levelAcces = response.data[i]['nivelAcceso'];
         if (test.Usuario === user && test.nivelAcceso === levelAcces ) {
           if (levelAcces ===  'Consu'){
-            Alert.alert('Aviso',`Acceso concedido: ${levelAcces} `)
             setHabReporte(false);
             setHabFecha(false);
             setHabMotivo(false);
             setHabCausa(false);
             setHabAcciones(false);
             setHabCerrar(false);
-            console.log(`Acceso concedido: ${levelAcces} `);
           }
           if (levelAcces ===  'Operador'){
-            Alert.alert('Aviso',`Acceso concedido: ${levelAcces} `)
             setHabReporte(false);
             setHabFecha(false);
-            setHabMotivo(false);
-            setHabCausa(false);
+            setHabMotivo(true);
+            setHabCausa(true);
             setHabAcciones(false);
             setHabCerrar(false);
-            console.log(`Acceso concedido: ${levelAcces} `);
           }
+          // console.log(`Acceso concedido: ${levelAcces} `);
+          Alert.alert('Aviso',`Acceso concedido: ${levelAcces} `)
         }
       }
     })
@@ -219,20 +217,26 @@ const Tickets = () => {
     });
   }
   const cerrarTicket = async () => {
-    if (motivo != '' && causa != '' && acciones != '') {
-      try {
-        const fechaHora = moment().format('lll');
-        const response = await axios.put(
-          `http://192.168.0.46:4000/maquinase/${noTicket}`, {
-            atendio: atencion,
-            fechaCierre: fechaHora,
-            estadofinal: 'Cerrado',}
-        );
-        Alert.alert('Aviso', `El Ticket esta ${estado}`);
-        getFolios();
-      } catch (error) {
-        console.error('Error', 'Error al realizar la solicitud POST:', error);
+    if (motivo != '' && causa != '' ) {
+      if (motivo === 'Cerrado' && levelAcces === "Operador" ) {
+        Alert.alert('Aviso', 'Usted no cuentan con permisos suficientes para realizar este cambio, el estado de Cerrado solo es para personal de IT / Administrador');
+      } else{
+
+        try {
+          const fechaHora = moment().format('lll');
+          const response = await axios.put(
+            `http://192.168.0.46:4000/maquinase/${noTicket}`, {
+              atendio: atencion,
+              fechaCierre: fechaHora,}
+              // estadofinal: 'Cerrado',}
+          );
+          Alert.alert('Aviso', `El Ticket esta ${estado}`);
+          getFolios();
+        } catch (error) {
+          console.error('Error', 'Error al realizar la solicitud POST:', error);
+        }
       }
+      
     } else {
       Alert.alert('Aviso', 'Aun no se puede cerrar este Ticket');
     }
@@ -353,14 +357,17 @@ const Tickets = () => {
         >
         <Text style={styles.Txtboton}>Cerrar Ticket</Text>
       </TouchableOpacity> */}
-      <Button onPress={ cerrarTicket }
+      {!habCerrar && (
+        <Button onPress={ cerrarTicket }
         style={styles.button}
         disabled={habCerrar}
-        icon='close-outline'
+        icon='file-document-edit'
         mode='contained'
-        buttonColor='#b01212'>
-          Cerrar Ticket
+        buttonColor='#374175'>
+          Actualizar ticket
       </Button>
+      )}
+      
 
     </ScrollView>
   </View>
