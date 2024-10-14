@@ -1,27 +1,26 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StyleSheet, Text, View, ScrollView } from 'react-native';
 import { TextInput, Image, Alert, Linking, Platform } from 'react-native';
+import React, { useContext, useEffect, useState } from 'react';
 import { Dropdown } from 'react-native-element-dropdown';
 import AntDesign from '@expo/vector-icons/AntDesign';
-import React, { useEffect, useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import { Button } from 'react-native-paper';
-import { autorun} from 'mobx';
-import { Camera } from 'expo-camera';
-// import { useContext } from 'react';
-// import store from './Store';
+// import { UserProvider, useUserContext } from './userContext';
+import { useUserContext } from './userContext';
 // import { UserContext } from './store';
+// import { useContext } from 'react';
+import { Camera } from 'expo-camera';
+import { autorun} from 'mobx';
 import moment from 'moment';
 import axios from 'axios';
 
 const Tab = createBottomTabNavigator();
-// const { user } = useContext(UserContext);
-// console.log(user.nombreUsuario);
-
-
 const Reportes = () => {
   //Datos
+  const [isCameraReady, setIsCameraReady] = useState(false);
+  const [usuarioReport, setUsuarioReport] = useState('');
   const [useReport, setuseReportData] = useState([{ }]);
   const [equipoData, setEquipoData] = useState([{ }]);
   const [marcaData, setMarcaData] = useState([{ }]);
@@ -30,7 +29,11 @@ const Reportes = () => {
   const [encData, setEncData] = useState([{ }]);
   const [numData, setnumData] = useState([{ }]);
   const [falla, setFalla] = useState('');
-  const [isCameraReady, setIsCameraReady] = useState(false);
+
+  const { nombreUsuario } = useUserContext();
+  // const { nombreUsuario, setNombreUsuario } = useContext(UserContext);
+  console.log(nombreUsuario);
+
   //Camara
   const [hasCameraPermission, setHasCameraPermission] = useState({});
   const [image, setImage] = useState('https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster');
@@ -38,13 +41,14 @@ const Reportes = () => {
   const [descripcion, setDescripcion] = useState('Mantenimiento Correctivo');
   const [marca, setMarca] = useState('Balanceadora Hofmann (Leeson)');
   const [encargado, setEncargado] = useState('Alejandro Ramirez');
-  const [usuarioReport, setUsuarioReport] = useState('Oscar');
+  // const [usuarioReport, setUsuarioReport] = setNombreUsuario;
+  // const [usuarioReport, setUsuarioReport] = useContext(UserContext)
   const [equipo, setEquipo] = useState('Balanceadora');
   const [depto, setDepto] = useState('Habilitado');
   const [fotoUri, setFotoUri] = useState(null);
   const [ubi, setUbi] = useState('Almacén');
   const [num, setNum] = useState('1234');
-//Valores
+//Valores limpios
   // const [usuarioReport, setUsuarioReport] = useState('');
   // const [descripcion, setDescripcion] = useState('');
   // const [encargado, setEncargado] = useState('');
@@ -54,8 +58,7 @@ const Reportes = () => {
   // const [depto, setDepto] = useState('');
   // const [num, setNum] = useState('');
   // const [ubi, setUbi] = useState('');
-  //Otro test
-  // const {nombreUsuario, setNombreUsuario } = useUserContext();
+  
   //Funciones
   const [selectedValue, setSelectedValue] = useState(null);
   const [isFocus, setIsFocus] = useState(false);
@@ -292,14 +295,15 @@ const Reportes = () => {
   }
   const ambos = async () => {
     // if (usuarioReport === '') {
-    if (usuarioReport === '' || equipo === '' || marca === '' || descripcion === '' || encargado === '' || num === '' || image === 'https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster' ) {
+    // if (usuarioReport === '' || equipo === '' || marca === '' || descripcion === '' || encargado === '' || num === '' || image === 'https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster' ) {
+    if (equipo === '' || marca === '' || descripcion === '' || encargado === '' || num === '' || image === 'https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster' ) {
       Alert.alert('Debe llenar todos los campos del formulario para generar el reportar');
     } else {
       try {
         await fetchCount();
         generarFolio();
         enviarDatos();
-        setUsuarioReport('');
+        // setUsuarioReport('');
         setEquipo('');
         setMarca('');
         setDescripcion('');
@@ -341,7 +345,7 @@ const Reportes = () => {
       //   reader.readAsDataURL(blob);
       // });
       formData.append('fecha', fechaHora);
-      formData.append('usuario', usuarioReport);
+      // formData.append('usuario', usuarioReport);
       formData.append('encargado', encargado);
       formData.append('departamento', depto);
       formData.append('id', num);
@@ -391,10 +395,10 @@ const Reportes = () => {
         <TextInput placeholder='Nombre del usuario...'
           style={styles.boxBig}
           onChangeText={(text : any) => {
-            setUsuarioReport(text);
+            // setUsuarioReport(text);
             handleState(text);
           }}
-          value={usuarioReport}
+          // value={usuarioReport}
           />
       </View>
 

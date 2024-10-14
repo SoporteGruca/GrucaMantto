@@ -1,24 +1,24 @@
 import { View, Text, Image, Alert, TextInput } from "react-native";
 import { useNavigation } from '@react-navigation/native';
-import React, { useState, useEffect, useContext, createContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Button, Icon } from 'react-native-paper';
 import { ActivityIndicator } from 'react-native';
-// import { UserProvider } from "./UserContext";
-// import store from './Store';
 import { StyleSheet } from "react-native";
 import { router } from "expo-router";
 import axios from "axios";
-
-// import { UserContext } from './store';
-
+// import { UserContext } from "./userContext";
+import { useUserContext } from './userContext';
+// import store from './store';
+// import { setUsername } from "./userAction"
 
 const Login = ({}) => {
+  const { nombreUsuario, setNombreUsuario } = useUserContext();
+  // const { setNombreUsuario } = useContext(UserContext);
+  const [contrasena, setContrasena] = useState('');
+  const [Usuario, setUsuario] = useState('');
   const navigation = useNavigation();
-  const [contrasena, setContrasena] = useState("1234");
-  // const { nombreUsuario } = useContext(UserContext);
-  const [Usuario, setUsuario] = useState("Oscar");
-  // const [contrasena, setContrasena] = useState("");
-  // const [Usuario, setUsuario] = useState("");
+  // const [contrasena, setContrasena] = useState("1234");
+  // const [Usuario, setUsuario] = useState("Oscar");
   const [loading, setLoading] = useState(false); // Nuevo estado para el ActivityIndicator
 
   const entrar = async () => {
@@ -30,13 +30,10 @@ const Login = ({}) => {
       });
       const data = response.data;
       if (data.success) {
-        // const nombreUsuario = data.user.NomUsuario;
-        // console.log(data.user.NomUsuario);
-        // nombreUsuario({ nombre: Usuario });
-        // setNombreUsuario(nombreUsuario);
+        setNombreUsuario(Usuario);
         router.push("/Routes/Forms");
-        // setContrasena("");
-        // setUsuario("");
+        setContrasena("");
+        setUsuario("");
       } else {
         Alert.alert("Aviso","Credenciales inválidas");
       }
@@ -89,6 +86,7 @@ const Login = ({}) => {
         </View>
       </View>
     </View>
+    
   );
 };
 

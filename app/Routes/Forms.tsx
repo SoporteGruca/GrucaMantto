@@ -37,7 +37,7 @@ export default function Formulario() {
       component={Reportes}
       options={{
         tabBarIcon: ({ color, size }) => (
-          <Ionicons name="document-text-outline" color={color} size={size} />
+          <Ionicons name="bug" color={color} size={size} />
         ),
       }}
     />
@@ -47,7 +47,7 @@ export default function Formulario() {
       component={Solicitud} 
       options={{
         tabBarIcon: ({ color, size }) => (
-          <Ionicons name="document" color={color} size={size} />
+          <Ionicons name="document-outline" color={color} size={size} />
         ),
       }}
     />

@@ -1,17 +1,14 @@
 import { View, Text, StyleSheet, TextInput, Image }  from 'react-native';
 import { TouchableOpacity, ScrollView } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import RNFetchBlob from "rn-fetch-blob";
 import { Alert } from 'react-native';
 import moment from 'moment';
 import axios from 'axios';
-// import ImageZoom from 'react-native-image-zoom-viewer';
-import { ImageZoom } from '@likashefqet/react-native-image-zoom';
-
-import Icon from '@mdi/react';
 import { Button } from 'react-native-paper';
-// import { mdiPlus } from '@mdi/js';
+// import { UserContext, UserProvider } from './userContext';
+
 
 const Tickets = () => {  
   //Datas
@@ -24,6 +21,10 @@ const Tickets = () => {
   const [noTicket, setNoTicket] = useState(null);
   const [fechaData, setFechaData] = useState([]);
   const [causaData, setCausaData] = useState([]);
+  const [correo, setCorreoData] = useState([]);
+
+  // const Usuario = useContext(UserContext);
+
   //Valores
   const [fotoUri, setFotoUri] = useState('https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster');
   const [atencion, setAtencion] = useState('');
@@ -35,8 +36,8 @@ const Tickets = () => {
   const [fecha, setFecha] = useState('');
   const [causa, setCausa] = useState('');
   const [folio, setFolio] = useState('');
-  let levelAcces = '';
-  // const {nombreUsuario, setNombreUsuario } = useUserContext();
+  let [level, setlevel] = useState('');
+  
   const estadosData = [ 
     { label: 'En progreso...', value: 'En progreso...' },
     { label: 'Pendiente', value: 'Pendiente' },
@@ -44,14 +45,14 @@ const Tickets = () => {
     { label: 'Cerrado', value: 'Cerrado' },]
   //isFocus
   const [isFocus, setIsFocus] = useState(false);
-  //habilitados
+  //habilitados Formulario
   const [habReporte, setHabReporte] = useState(false);
   const [habFecha, setHabFecha] = useState(false);
   const [habMotivo, setHabMotivo] = useState(false);
   const [habCausa, setHabCausa] = useState(false);
   const [habAcciones, setHabAcciones] = useState(false);
   const [habCerrar, setHabCerrar] = useState(false);
-
+  // console.log(nombreUsuario);
   useEffect(() => {
     validarUsuario();
     getUsuarios();
@@ -65,33 +66,41 @@ const Tickets = () => {
     };
     axios(config).then(function (response) {
       var count = Object.keys(response.data).length;
-      // console.log(response.data);
       const test = {
-        Usuario: 'Test',
-        nivelAcceso: 'Operador'
+        Usuario: 'Juanpa',
+        nivelAcceso: 'Consu'
       }
       for (var i = 0; i < count; i++) {
         let user = response.data[i]['Usuario'];
-        levelAcces = response.data[i]['nivelAcceso'];
-        if (test.Usuario === user && test.nivelAcceso === levelAcces ) {
-          if (levelAcces ===  'Consu'){
-            setHabReporte(false);
-            setHabFecha(false);
-            setHabMotivo(false);
-            setHabCausa(false);
+        let nivelAcceso = response.data[i]['nivelAcceso'];
+        if ( test.Usuario == user) {
+        // if (user == test.Usuario) {
+          if (nivelAcceso == 'Consu'){
+            setHabReporte (false);
+            setHabFecha   (false);
+            setHabMotivo  (false);
+            setHabCausa   (false);
             setHabAcciones(false);
-            setHabCerrar(false);
-          }
-          if (levelAcces ===  'Operador'){
-            setHabReporte(false);
-            setHabFecha(false);
-            setHabMotivo(true);
-            setHabCausa(true);
+            setHabCerrar  (false);
+            Alert.alert('Aviso',`Acceso concedido: ${nivelAcceso} `)
+          }else if (nivelAcceso == 'Operador'){
+            setHabReporte (false);
+            setHabFecha   (false);
+            setHabMotivo  (true);
+            setHabCausa   (true);
             setHabAcciones(false);
-            setHabCerrar(false);
+            setHabCerrar  (false);
+            Alert.alert('Aviso',`Acceso concedido: ${nivelAcceso} `)
+          }else if (nivelAcceso == 'Admin'){
+            setHabReporte (true);
+            setHabFecha   (true);
+            setHabMotivo  (true);
+            setHabCausa   (true);
+            setHabAcciones(true);
+            setHabCerrar  (true);
+            Alert.alert('Aviso',`Acceso concedido: ${nivelAcceso} `)
           }
-          // console.log(`Acceso concedido: ${levelAcces} `);
-          Alert.alert('Aviso',`Acceso concedido: ${levelAcces} `)
+          setlevel(nivelAcceso);
         }
       }
     })
@@ -182,14 +191,19 @@ const Tickets = () => {
     axios(config).then(function (response) {
       var count = Object.keys(response.data).length;
       let equipoArray: any = [];
-      
+      let correoArray: any = [];
       for (var i = 0; i < count; i++) {
         equipoArray.push({
           value: response.data[i].Usuario,
           label: response.data[i].Usuario,
         });
+        correoArray.push({
+          value: response.data[i].Usuario,
+          label: response.data[i].Usuario,
+        });
       }
       setAtencionData(equipoArray); 
+      setCorreoData(correoArray)
     })
     .catch(function (error) {
       console.log(error);
@@ -203,7 +217,6 @@ const Tickets = () => {
     axios(config).then(function (response) {
       var count = Object.keys(response.data).length;
       let equipoArray: any = [];
-      
       for (var i = 0; i < count; i++) {
         equipoArray.push({
           value: response.data[i].Usuario,
@@ -218,159 +231,156 @@ const Tickets = () => {
   }
   const cerrarTicket = async () => {
     if (motivo != '' && causa != '' ) {
-      if (motivo === 'Cerrado' && levelAcces === "Operador" ) {
+      // console.log('Estado:', estado,'', 'level:', level);
+      if (estado === 'Cerrado' && level === "Operador" ) {
         Alert.alert('Aviso', 'Usted no cuentan con permisos suficientes para realizar este cambio, el estado de Cerrado solo es para personal de IT / Administrador');
+      } else if ( level === "Cosnu" ){
+        Alert.alert('Aviso', 'Los permisos en tu cuenta no permite realizar esta operacion, favor de consultar con personal de sistemas. \n ¿Quieres mandar correo con tu peticion? ');
       } else{
-
         try {
           const fechaHora = moment().format('lll');
           const response = await axios.put(
             `http://192.168.0.46:4000/maquinase/${noTicket}`, {
               atendio: atencion,
-              fechaCierre: fechaHora,}
-              // estadofinal: 'Cerrado',}
+              fechaCierre: fechaHora,
+              estadofinal: `${estado}`}
           );
-          Alert.alert('Aviso', `El Ticket esta ${estado}`);
+          if ( atencion == 'Oscar')
           getFolios();
+          Alert.alert('Aviso', `El Ticket esta ${estado}`);
         } catch (error) {
           console.error('Error', 'Error al realizar la solicitud POST:', error);
         }
       }
-      
     } else {
       Alert.alert('Aviso', 'Aun no se puede cerrar este Ticket');
     }
   };
   return (
-  <View style={styles.container}>
-    <ScrollView>
-      <Text style={styles.Textmain}>Mis Tickets</Text>
-      <Text style={styles.text}>Numero de Ticket</Text>
-      <Dropdown
-        style={[styles.dropdown]}
-        placeholderStyle={styles.placeholderStyle}
-        selectedTextStyle={styles.selectedTextStyle}
-        inputSearchStyle={styles.inputSearchStyle}
-        iconStyle={styles.iconStyle}
-        data={noTicketData}
-        search
-        maxHeight={300}
-        labelField='label'
-        valueField='value'
-        placeholder={!isFocus ? 'Seleccione Folio' : '...'}
-        searchPlaceholder='Search...'
-        value={noTicket}
-        onChange={(item : any) => {
-          handleState(item.value);
-          setNoTicket(item.value);
-        }}
-      />
-      <View style={styles.containerSeparate}>
-        <View style={styles.containerDrop}>
-          <Text style={styles.textCenter}>Equipo reportado</Text>
-          <TextInput value={repsol}
-            style={styles.boxsmall}
-            editable={habReporte}
-            />
-        </View>
-        <View style={styles.containerDrop}>
-          <Text style={styles.textCenter}>Fecha del Ticket</Text>
-          <TextInput 
-            value={fecha} 
-            style={styles.boxsmall}
-            editable={habFecha}
-            />
-        </View>
-      </View>
-      <View style={styles.contMotivo}>
-        <Text style={styles.textCenter}>Motivo</Text>
-        <TextInput style={styles.boxlarge2}
-          value={motivo}
-          multiline
-          numberOfLines={6}
-          editable={habMotivo}
-          onChangeText={setMotivo}
-        />
-      </View>
-      <View style={styles.containerSeparate2}>
-        <View style={[styles.containerDrop]}>
-          <Text style={styles.textCenter}>Agente que atiende</Text>
+      <View style={styles.container}>
+        <ScrollView>
+          <Text style={styles.Textmain}>Mis Tickets</Text>
+          <Text style={styles.text}>Numero de Ticket</Text>
           <Dropdown
             style={[styles.dropdown]}
             placeholderStyle={styles.placeholderStyle}
             selectedTextStyle={styles.selectedTextStyle}
             inputSearchStyle={styles.inputSearchStyle}
             iconStyle={styles.iconStyle}
-            data={atencionData}
+            data={noTicketData}
             search
-            maxHeight={200}
+            maxHeight={300}
             labelField='label'
             valueField='value'
-            placeholder={'Agente que atiende...'}
-            searchPlaceholder='Buscar...'
-            value={atencion}
+            placeholder={!isFocus ? 'Seleccione Folio' : '...'}
+            searchPlaceholder='Search...'
+            value={noTicket}
             onChange={(item : any) => {
-              setAtencion(item.value);
-              cargarAtencio();
+              handleState(item.value);
+              setNoTicket(item.value);
             }}
           />
-        </View>
-        <View style={[styles.containerDrop]}>
-          <Text style={styles.textCenter}>Estado del ticket</Text>      
-          <Dropdown
-            style={[styles.dropdown]}
-            placeholderStyle={styles.placeholderStyle}
-            selectedTextStyle={styles.selectedTextStyle}
-            inputSearchStyle={styles.inputSearchStyle}
-            iconStyle={styles.iconStyle}
-            data={estadosData}
-            search
-            maxHeight={200}
-            labelField='label'
-            valueField='value'
-            placeholder={'Estado del ticket...'}
-            searchPlaceholder='Buscar...'
-            value={estado}
-            onChange={(item : any) => {
-              setEstado(item.value);
-            }}
+          <View style={styles.containerSeparate}>
+            <View style={styles.containerDrop}>
+              <Text style={styles.textCenter}>Equipo reportado</Text>
+              <TextInput value={repsol}
+                style={styles.boxsmall}
+                editable={habReporte}
+                />
+            </View>
+            <View style={styles.containerDrop}>
+              <Text style={styles.textCenter}>Fecha del Ticket</Text>
+              <TextInput 
+                value={fecha} 
+                style={styles.boxsmall}
+                editable={habFecha}
+                />
+            </View>
+          </View>
+          <View style={styles.contMotivo}>
+            <Text style={styles.textCenter}>Motivo</Text>
+            <TextInput style={styles.boxlarge2}
+              value={motivo}
+              multiline
+              numberOfLines={6}
+              editable={habMotivo}
+              onChangeText={setMotivo}
+            />
+          </View>
+          <View style={styles.containerSeparate2}>
+            <View style={[styles.containerDrop]}>
+              <Text style={styles.textCenter}>Agente que atiende</Text>
+              <Dropdown
+                style={[styles.dropdown]}
+                placeholderStyle={styles.placeholderStyle}
+                selectedTextStyle={styles.selectedTextStyle}
+                inputSearchStyle={styles.inputSearchStyle}
+                iconStyle={styles.iconStyle}
+                data={atencionData}
+                search
+                maxHeight={200}
+                labelField='label'
+                valueField='value'
+                placeholder={'Agente que atiende...'}
+                searchPlaceholder='Buscar...'
+                value={atencion}
+                onChange={(item : any) => {
+                  setAtencion(item.value);
+                }}
+              />
+            </View>
+            <View style={[styles.containerDrop]}>
+              <Text style={styles.textCenter}>Estado del ticket</Text>      
+              <Dropdown
+                style={[styles.dropdown]}
+                placeholderStyle={styles.placeholderStyle}
+                selectedTextStyle={styles.selectedTextStyle}
+                inputSearchStyle={styles.inputSearchStyle}
+                iconStyle={styles.iconStyle}
+                data={estadosData}
+                search
+                maxHeight={200}
+                labelField='label'
+                valueField='value'
+                placeholder={'Estado del ticket...'}
+                searchPlaceholder='Buscar...'
+                value={estado}
+                onChange={(item : any) => {
+                  setEstado(item.value);
+                }}
+              />
+            </View>
+          </View>
+            <Image style = { styles.imagenContainer }
+              source = {{ uri: fotoUri }}>
+            </Image>
+          <Text style={styles.textCenter}>Causa Raiz</Text>
+          <TextInput value={causa}
+            onChangeText={setCausa}
+            editable={habCausa}
+            style={styles.boxlarge}
           />
-        </View>
+          <Text style={styles.textCenter}>Acciones a Seguir</Text>
+          <TextInput value={acciones}
+            style={styles.boxlarge2}
+            editable={habAcciones}
+            onChangeText={setAcciones}>
+          </TextInput>
+          {/* <TouchableOpacity style={styles.button}
+            onPress={cerrarTicket}
+            >
+            <Text style={styles.Txtboton}>Cerrar Ticket</Text>
+          </TouchableOpacity> */}
+            <Button onPress={ cerrarTicket }
+            style={styles.button}
+            disabled={habCerrar}
+            icon='file-document-edit'
+            mode='contained'
+            buttonColor='#374175'>
+              Actualizar ticket
+          </Button>
+        </ScrollView>
       </View>
-        <Image style = { styles.imagenContainer }
-          source = {{ uri: fotoUri }}>
-        </Image>
-      <Text style={styles.textCenter}>Causa Raiz</Text>
-      <TextInput value={causa}
-        onChangeText={setCausa}
-        editable={habCausa}
-        style={styles.boxlarge}
-      />
-      <Text style={styles.textCenter}>Acciones a Seguir</Text>
-      <TextInput value={acciones}
-        style={styles.boxlarge2}
-        editable={habAcciones}
-        onChangeText={setAcciones}>
-      </TextInput>
-      {/* <TouchableOpacity style={styles.button}
-        onPress={cerrarTicket}
-        >
-        <Text style={styles.Txtboton}>Cerrar Ticket</Text>
-      </TouchableOpacity> */}
-      {!habCerrar && (
-        <Button onPress={ cerrarTicket }
-        style={styles.button}
-        disabled={habCerrar}
-        icon='file-document-edit'
-        mode='contained'
-        buttonColor='#374175'>
-          Actualizar ticket
-      </Button>
-      )}
-      
-
-    </ScrollView>
-  </View>
   );
 }
 

@@ -17,7 +17,7 @@ const Solicitud = () => {
     const [folio, setFolio] = useState('');
     const [deptos, setDepto] = useState('');
 
-    const nombreUsuario = 'Oscar Alonso';
+    // const nombreUsuario = 'Oscar Alonso';
     const encargado = 'Staff Sistemas';
 
     useEffect(() => {
@@ -52,24 +52,24 @@ const Solicitud = () => {
         
     };
 
-    useEffect (() =>{
-    var config = {
-        method: 'get',
-        url: `http://192.168.0.46:4000/equipos/${nombreUsuario}`,
-    };
-    axios(config).then(function (response) {
-        const datos = response.data;
-        setDeptoValue(datos.map((item : any) => item.Depto));
-        setNominaValue(datos.map((item : any) => item.NumNomina));
-        if (datos.length > 0) {
-            setDepto(datos[0].Depto);
-            setNomina(datos[0].NumNomina);
-        }
-    })
-    .catch(function (error) {
-    console.error('Error fetching data:', error);
-    });
-    }, []);
+    // useEffect (() =>{
+    // var config = {
+    //     method: 'get',
+    //     url: `http://192.168.0.46:4000/equipos/${nombreUsuario}`,
+    // };
+    // axios(config).then(function (response) {
+    //     const datos = response.data;
+    //     setDeptoValue(datos.map((item : any) => item.Depto));
+    //     setNominaValue(datos.map((item : any) => item.NumNomina));
+    //     if (datos.length > 0) {
+    //         setDepto(datos[0].Depto);
+    //         setNomina(datos[0].NumNomina);
+    //     }
+    // })
+    // .catch(function (error) {
+    // console.error('Error fetching data:', error);
+    // });
+    // }, []);
 
     const enviarDatos = async () => {
         try {
@@ -77,8 +77,8 @@ const Solicitud = () => {
             const response = await axios.post('http://192.168.0.46:4000/tickets', {
             tipo: 'Solicitud',
             fecha: fechaHora,
-            usuario: nombreUsuario,
-            encargado: nombreUsuario,
+            // usuario: nombreUsuario,
+            // encargado: nombreUsuario,
             nomina: nominas.toString(),
             departamento: deptos.toString(),
             reporte: solicitar.toString(),
