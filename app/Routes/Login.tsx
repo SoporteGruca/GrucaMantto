@@ -1,26 +1,23 @@
 import { View, Text, Image, Alert, TextInput } from "react-native";
 import { useNavigation } from '@react-navigation/native';
-import React, { useState, useEffect, useContext } from "react";
-import { Button, Icon } from 'react-native-paper';
 import { ActivityIndicator } from 'react-native';
+import { Button } from 'react-native-paper';
 import { StyleSheet } from "react-native";
+import React, { useState } from "react";
 import { router } from "expo-router";
 import axios from "axios";
-// import { UserContext } from "./userContext";
-import { useUserContext } from './userContext';
-// import store from './store';
-// import { setUsername } from "./userAction"
+
+import { observer } from 'mobx-react';
+import userStore from '../store';
 
 const Login = ({}) => {
-  const { nombreUsuario, setNombreUsuario } = useUserContext();
-  // const { setNombreUsuario } = useContext(UserContext);
-  const [contrasena, setContrasena] = useState('');
-  const [Usuario, setUsuario] = useState('');
   const navigation = useNavigation();
+  const [Usuario, setUsuario] = useState('');
+  const [loading, setLoading] = useState(false); // Nuevo estado para el ActivityIndicator
+  const [contrasena, setContrasena] = useState('');
+  //Valores modo test
   // const [contrasena, setContrasena] = useState("1234");
   // const [Usuario, setUsuario] = useState("Oscar");
-  const [loading, setLoading] = useState(false); // Nuevo estado para el ActivityIndicator
-
   const entrar = async () => {
     setLoading(true);
     try {
@@ -30,7 +27,7 @@ const Login = ({}) => {
       });
       const data = response.data;
       if (data.success) {
-        setNombreUsuario(Usuario);
+        userStore.setUsuario(Usuario);
         router.push("/Routes/Forms");
         setContrasena("");
         setUsuario("");
@@ -42,7 +39,6 @@ const Login = ({}) => {
     } finally {
       setLoading(false);
     }
-    
   };
   return (
     <View style={styles.container}>
@@ -86,10 +82,8 @@ const Login = ({}) => {
         </View>
       </View>
     </View>
-    
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     height: "100%",
@@ -163,4 +157,4 @@ const styles = StyleSheet.create({
     padding:20,
   }
 });
-export default Login;
+export default observer(Login);

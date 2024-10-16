@@ -1,21 +1,18 @@
-import { legacy_createStore as createStore } from 'redux';
-import { combineReducers } from 'redux';
+import { useStore } from 'mobx-react';
+import { makeAutoObservable } from "mobx";
 
-const initialState = {
-    usuario: '',
-};
-
-const usuarioReducer = (state = initialState, action) => {
-    switch (action.type) {
-        case 'GUARDAR_USUARIO':
-        return { ...state, usuario: action.usuario };
-        default:
-        return state;
+class UserStore {
+    usuario = "";
+    fullName = "";
+    constructor(parameters) {
+        makeAutoObservable(this)
     }
-};
-
-const rootReducer = combineReducers({
-    usuario: usuarioReducer,
-});
-const store = createStore(rootReducer);
-export default store;
+    setUsuario(newUsuario) {
+        this.usuario = newUsuario;
+    }
+    setFullName(newFullName) {
+        this.fullName = newFullName;
+    }
+}
+const userStore = new UserStore();
+export default userStore;

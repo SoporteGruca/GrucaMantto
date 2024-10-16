@@ -1,14 +1,12 @@
 import { View, Text, StyleSheet, TextInput, Image }  from 'react-native';
-import { TouchableOpacity, ScrollView } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
-import React, { useState, useEffect, useContext } from 'react';
-import RNFetchBlob from "rn-fetch-blob";
+import React, { useState, useEffect } from 'react';
+import { ScrollView, Linking } from 'react-native';
+import { Button } from 'react-native-paper';
 import { Alert } from 'react-native';
+import userStore from '../store';
 import moment from 'moment';
 import axios from 'axios';
-import { Button } from 'react-native-paper';
-// import { UserContext, UserProvider } from './userContext';
-
 
 const Tickets = () => {  
   //Datas
@@ -18,12 +16,13 @@ const Tickets = () => {
   const [repsolData, setRepsolData] = useState([]);
   const [motivoData, setMotivoData] = useState([]);
   const [estadoData, setEstadoData] = useState([]);
+  const [fullName, setFullNameData] = useState('');
   const [noTicket, setNoTicket] = useState(null);
   const [fechaData, setFechaData] = useState([]);
   const [causaData, setCausaData] = useState([]);
   const [correo, setCorreoData] = useState([]);
-
-  // const Usuario = useContext(UserContext);
+  const [usuario, setUsuario] = useState("");
+  let correoArray: any = [];
 
   //Valores
   const [fotoUri, setFotoUri] = useState('https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster');
@@ -37,6 +36,7 @@ const Tickets = () => {
   const [causa, setCausa] = useState('');
   const [folio, setFolio] = useState('');
   let [level, setlevel] = useState('');
+  let emailAddress = '';
   
   const estadosData = [ 
     { label: 'En progreso...', value: 'En progreso...' },
@@ -52,13 +52,13 @@ const Tickets = () => {
   const [habCausa, setHabCausa] = useState(false);
   const [habAcciones, setHabAcciones] = useState(false);
   const [habCerrar, setHabCerrar] = useState(false);
-  // console.log(nombreUsuario);
+
   useEffect(() => {
+    setUsuario(userStore.usuario);
     validarUsuario();
     getUsuarios();
     getFolios();
   }, []);
-
   const validarUsuario  = () => {
     var config = {
       method: 'get',
@@ -66,22 +66,17 @@ const Tickets = () => {
     };
     axios(config).then(function (response) {
       var count = Object.keys(response.data).length;
-      const test = {
-        Usuario: 'Juanpa',
-        nivelAcceso: 'Consu'
-      }
       for (var i = 0; i < count; i++) {
         let user = response.data[i]['Usuario'];
         let nivelAcceso = response.data[i]['nivelAcceso'];
-        if ( test.Usuario == user) {
-        // if (user == test.Usuario) {
+        if ( usuario == user) {
           if (nivelAcceso == 'Consu'){
             setHabReporte (false);
             setHabFecha   (false);
             setHabMotivo  (false);
             setHabCausa   (false);
             setHabAcciones(false);
-            setHabCerrar  (false);
+            setHabCerrar  (true);
             Alert.alert('Aviso',`Acceso concedido: ${nivelAcceso} `)
           }else if (nivelAcceso == 'Operador'){
             setHabReporte (false);
@@ -97,7 +92,7 @@ const Tickets = () => {
             setHabMotivo  (true);
             setHabCausa   (true);
             setHabAcciones(true);
-            setHabCerrar  (true);
+            setHabCerrar  (false);
             Alert.alert('Aviso',`Acceso concedido: ${nivelAcceso} `)
           }
           setlevel(nivelAcceso);
@@ -117,21 +112,20 @@ const Tickets = () => {
     loadImage(folioDB);
     axios(config).then(function (response) {
       const datos = response.data;
-      // console.log(datos);
-      setRepsolData(  datos.map((item : any) => item['Maquina']));
-      setFechaData(   datos.map((item : any) => item['Fecha Inicio']));
-      setMotivoData(  datos.map((item : any) => item['Descripcion de Incidencia']));
-      setCausaData(   datos.map((item : any) => item['Causa Raiz']));
+      setRepsolData  (datos.map((item : any) => item['Maquina']));
+      setFechaData   (datos.map((item : any) => item['Fecha Inicio']));
+      setMotivoData  (datos.map((item : any) => item['Descripcion de Incidencia']));
+      setCausaData   (datos.map((item : any) => item['Causa Raiz']));
       setAccionesData(datos.map((item : any) => item['Acciones a Seguir']));
-      setEstadoData(datos.map((item : any) => item['Estado del Ticket']));
+      setEstadoData  (datos.map((item : any) => item['Estado del Ticket']));
       if (datos.length > 0) {
-        setRepsol(  datos[0]['Maquina']);
-        setFecha(   datos[0]['Fecha Inicio']);
-        setMotivo(  datos[0]['Descripcion de Incidencia']);
-        setAtencion(datos[0]['Atencion de Ticket']);
-        setCausa(   datos[0]['Causa Raiz']);
-        setAcciones(datos[0]['Acciones a Seguir']);
-        setEstado(datos[0]['Estado del Ticket']);
+        setRepsol   (datos[0]['Maquina']);
+        setFecha    (datos[0]['Fecha Inicio']);
+        setMotivo   (datos[0]['Descripcion de Incidencia']);
+        setAtencion (datos[0]['Atencion de Ticket']);
+        setCausa    (datos[0]['Causa Raiz']);
+        setAcciones (datos[0]['Acciones a Seguir']);
+        setEstado   (datos[0]['Estado del Ticket']);
       }      
       })
     .catch(function (error) {
@@ -149,23 +143,20 @@ const Tickets = () => {
     .then((base64Imagen) => {
       const imageUri = `data:image/jpeg;base64,${base64Imagen}`;
       setFotoUri(imageUri);
-      // console.log('Blob Info:', imageUri);
     })
       .catch(function(error) {
         console.error('Error fetching data:', error);
       });
   }
-
   const getFolios  = async () => {
     var config = {
       method: 'get',
       url: `http://192.168.0.46:4000/maqticket`,
-        // url: `http://192.168.0.46:4000/maquinaseee/${nombreUsuario}`,
+        // url: `http://192.168.0.46:4000/maquinaseee/${usuario}`,
     };
     axios(config).then(function (response) {
       var count = Object.keys(response.data).length;
       let Array: any = [];
-      
       for (var i = 0; i < count; i++) {
         if (response.data[i]['Estado del Ticket'] == 'Pendiente' || response.data[i]['Estado del Ticket'] == 'En progreso...') {
           // console.log(response.data[i]['Estado del Ticket']);
@@ -175,14 +166,12 @@ const Tickets = () => {
           });
         }
       }
-      // console.log('Equipos:  ', equipoArray);
       setNoTicketData(Array);
     })
     .catch(function (error) {
       console.log(error);
     });
   }
-  
   const cargarAtencio = () => {
     var config = {  
       method: 'get',
@@ -191,7 +180,6 @@ const Tickets = () => {
     axios(config).then(function (response) {
       var count = Object.keys(response.data).length;
       let equipoArray: any = [];
-      let correoArray: any = [];
       for (var i = 0; i < count; i++) {
         equipoArray.push({
           value: response.data[i].Usuario,
@@ -202,8 +190,9 @@ const Tickets = () => {
           label: response.data[i].Usuario,
         });
       }
+      console.log(correo);
       setAtencionData(equipoArray); 
-      setCorreoData(correoArray)
+      setCorreoData(correoArray)      
     })
     .catch(function (error) {
       console.log(error);
@@ -216,14 +205,14 @@ const Tickets = () => {
     };
     axios(config).then(function (response) {
       var count = Object.keys(response.data).length;
-      let equipoArray: any = [];
+      let userArray: any = [];
       for (var i = 0; i < count; i++) {
-        equipoArray.push({
+        userArray.push({
           value: response.data[i].Usuario,
           label: response.data[i].Usuario,
         });
       }
-      setAtencionData(equipoArray); 
+      setAtencionData(userArray); 
     })
     .catch(function (error) {
       console.log(error);
@@ -231,12 +220,22 @@ const Tickets = () => {
   }
   const cerrarTicket = async () => {
     if (motivo != '' && causa != '' ) {
-      // console.log('Estado:', estado,'', 'level:', level);
       if (estado === 'Cerrado' && level === "Operador" ) {
         Alert.alert('Aviso', 'Usted no cuentan con permisos suficientes para realizar este cambio, el estado de Cerrado solo es para personal de IT / Administrador');
       } else if ( level === "Cosnu" ){
         Alert.alert('Aviso', 'Los permisos en tu cuenta no permite realizar esta operacion, favor de consultar con personal de sistemas. \n ¿Quieres mandar correo con tu peticion? ');
       } else{
+        if (atencion == 'Oscar') {
+          emailAddress =  'soporte.sistemas@gruca.mx';
+        }
+        else if (atencion == 'Juanpa') {
+          emailAddress =  'sistemas@gruca.mx';
+        }
+        else if (atencion == 'Mario') {
+          emailAddress =  'mario.roman@gruca.mx';
+        } else {
+          emailAddress =  'soporte.sistemas@gruca.mx';
+        }
         try {
           const fechaHora = moment().format('lll');
           const response = await axios.put(
@@ -255,6 +254,19 @@ const Tickets = () => {
     } else {
       Alert.alert('Aviso', 'Aun no se puede cerrar este Ticket');
     }
+
+    const openGmail = async () => {
+      // const emailAddress = 'reporteyfallas@gruca.mx';
+      const subject = `Se ha registrado un reporte con el folio: ${folio}`;
+      const body = `${fullName} ha enviado un reporte de ${repsol} debido a ${motivo}`;
+      const mailtoUrl = `mailto:${emailAddress}?subject=${subject}&body=${body}`;
+      // const emailAddressTest = 'soporte.sistemas@gruca.mx';
+      // const subjectTest = `Se ha registrado un reporte con el folio: ${folio}`;
+      // const bodyTest = `${usuarioReport} ha enviado un reporte de ${equipo} debido a ${descripcion}`;
+      // const mailtoUrl = `mailto:${emailAddressTest}?subject=${subjectTest}&body=${bodyTest}`;
+      Linking.openURL(mailtoUrl);
+    };
+    
   };
   return (
       <View style={styles.container}>
@@ -278,6 +290,7 @@ const Tickets = () => {
             onChange={(item : any) => {
               handleState(item.value);
               setNoTicket(item.value);
+              validarUsuario();
             }}
           />
           <View style={styles.containerSeparate}>
@@ -474,18 +487,16 @@ const styles = StyleSheet.create({
     alignItems:'center',
   },
   containerSeparate: {
-    width:'98%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    width:'100%',
+    flexDirection: 'column',
     marginVertical:'2%'
   },
   containerSeparate2: {
-    width:'98%',
-    flexDirection:'row',
+    width:'100%',
     justifyContent: 'space-evenly',
   },
   containerDrop: {
-    width:'48%',
+    width:'100%',
     marginVertical:'2%',
   },
   button: {

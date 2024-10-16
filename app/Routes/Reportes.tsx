@@ -1,18 +1,13 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { TextInput, Image, Alert, Linking } from 'react-native';
 import { StyleSheet, Text, View, ScrollView } from 'react-native';
-import { TextInput, Image, Alert, Linking, Platform } from 'react-native';
-import React, { useContext, useEffect, useState } from 'react';
 import { Dropdown } from 'react-native-element-dropdown';
 import AntDesign from '@expo/vector-icons/AntDesign';
+import React, { useEffect, useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
 import { Button } from 'react-native-paper';
-// import { UserProvider, useUserContext } from './userContext';
-import { useUserContext } from './userContext';
-// import { UserContext } from './store';
-// import { useContext } from 'react';
 import { Camera } from 'expo-camera';
-import { autorun} from 'mobx';
+import userStore from '../store';
 import moment from 'moment';
 import axios from 'axios';
 
@@ -22,6 +17,7 @@ const Reportes = () => {
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [usuarioReport, setUsuarioReport] = useState('');
   const [useReport, setuseReportData] = useState([{ }]);
+  const [atencionData, setAtencionData] = useState([]);
   const [equipoData, setEquipoData] = useState([{ }]);
   const [marcaData, setMarcaData] = useState([{ }]);
   const [fallaData, setFallaData] = useState([{ }]);
@@ -29,36 +25,29 @@ const Reportes = () => {
   const [encData, setEncData] = useState([{ }]);
   const [numData, setnumData] = useState([{ }]);
   const [falla, setFalla] = useState('');
-
-  const { nombreUsuario } = useUserContext();
-  // const { nombreUsuario, setNombreUsuario } = useContext(UserContext);
-  console.log(nombreUsuario);
-
+  let usuario : string = '';
   //Camara
   const [hasCameraPermission, setHasCameraPermission] = useState({});
   const [image, setImage] = useState('https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster');
   //Valores para Test
-  const [descripcion, setDescripcion] = useState('Mantenimiento Correctivo');
-  const [marca, setMarca] = useState('Balanceadora Hofmann (Leeson)');
-  const [encargado, setEncargado] = useState('Alejandro Ramirez');
-  // const [usuarioReport, setUsuarioReport] = setNombreUsuario;
-  // const [usuarioReport, setUsuarioReport] = useContext(UserContext)
-  const [equipo, setEquipo] = useState('Balanceadora');
-  const [depto, setDepto] = useState('Habilitado');
-  const [fotoUri, setFotoUri] = useState(null);
-  const [ubi, setUbi] = useState('Almacén');
-  const [num, setNum] = useState('1234');
-//Valores limpios
-  // const [usuarioReport, setUsuarioReport] = useState('');
-  // const [descripcion, setDescripcion] = useState('');
-  // const [encargado, setEncargado] = useState('');
+  // const [descripcion, setDescripcion] = useState('Mantenimiento Correctivo');
+  // const [marca, setMarca] = useState('Balanceadora Hofmann (Leeson)');
+  // const [encargado, setEncargado] = useState('Alejandro Ramirez');
+  // const [equipo, setEquipo] = useState('Balanceadora');
+  // const [depto, setDepto] = useState('Habilitado');
   // const [fotoUri, setFotoUri] = useState(null);
-  // const [equipo, setEquipo] = useState('');
-  // const [marca, setMarca] = useState('');
-  // const [depto, setDepto] = useState('');
-  // const [num, setNum] = useState('');
-  // const [ubi, setUbi] = useState('');
-  
+  // const [ubi, setUbi] = useState('Almacén');
+  // const [num, setNum] = useState('1234');
+//Valores limpios
+  const [descripcion, setDescripcion] = useState('');
+  const [encargado, setEncargado] = useState('');
+  const [fotoUri, setFotoUri] = useState(null);
+  const [equipo, setEquipo] = useState('');
+  const [marca, setMarca] = useState('');
+  const [depto, setDepto] = useState('');
+  const [num, setNum] = useState('');
+  const [ubi, setUbi] = useState('');
+  const [fullName, setFullNameData] = useState('');
   //Funciones
   const [selectedValue, setSelectedValue] = useState(null);
   const [isFocus, setIsFocus] = useState(false);
@@ -66,6 +55,9 @@ const Reportes = () => {
   const [folio, setFolio] = useState('');
 
   useEffect(() => {
+    usuario = userStore.usuario;
+    setUsuarioReport(usuario);
+    getUserData();
     fetchCount();
     loadMaquina();
     camPermission();
@@ -73,7 +65,30 @@ const Reportes = () => {
     loadEncargado();
     loadIncidencia();
   }, []);
-  
+  const getUserData  = async () => { //Get tje full name of  the user
+    var config = {  
+      method: 'get',
+      url: `http://192.168.0.46:4000/verifica`,
+    };
+    axios(config).then(function (response) {
+      var count = Object.keys(response.data).length;
+      let userArray: any = [];
+      for (var i = 0; i < count; i++) {
+        userArray.push({
+          value: response.data[i].Usuario,
+          label: response.data[i].Usuario,
+        });
+        if (usuario == response.data[i].Usuario) {
+          setFullNameData(response.data[i].NomUsuario);
+          userStore.setFullName(fullName);
+        }
+      }
+      setAtencionData(userArray); 
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+  }
   const fetchCount = async () => {
     try {
       const response = await axios.get('http://192.168.0.46:4000/foliosm');
@@ -158,26 +173,6 @@ const Reportes = () => {
       console.log(error);
     });
   })
-  // useEffect(() => {
-  //   var config = {
-  //     method: 'get',
-  //     url: `http://192.168.0.46:4000/users`,
-  //   };
-  //   axios(config).then(function (response) {
-  //     var count = Object.keys(response.data).length;      
-  //     let equipoArray = [];            
-  //       for (var i = 0; i < count; i++) {
-  //         equipoArray.push({
-  //           value: response.data[i].Usuario,
-  //           label: response.data[i].Usuario,
-  //         });
-  //       }        
-  //       setuseReportData(equipoArray);
-  //     })
-  //   .catch(function (error) {
-  //     console.log(error);
-  //   });
-  // }, []);
   const generarFolio = () => {
     const nuevoNumero = parseInt(folio.split('-')[1]) + 1;
     const nuevoFolio = `RM-${nuevoNumero.toString().padStart(4, '0')}`;
@@ -235,7 +230,7 @@ const Reportes = () => {
     }
     axios(configMaq).then(function (response) {
       const datos = response.data;
-      console.log(datos);
+      // console.log(datos);
       let ubiArray : any[] = [];
       let encArray : any[] = [];
       let numArray : any[] = [];
@@ -294,16 +289,14 @@ const Reportes = () => {
     );
   }
   const ambos = async () => {
-    // if (usuarioReport === '') {
-    // if (usuarioReport === '' || equipo === '' || marca === '' || descripcion === '' || encargado === '' || num === '' || image === 'https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster' ) {
-    if (equipo === '' || marca === '' || descripcion === '' || encargado === '' || num === '' || image === 'https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster' ) {
+    if (usuarioReport === '' || equipo === '' || marca === '' || descripcion === '' || encargado === '' || num === '' || image === 'https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster' ) {
       Alert.alert('Debe llenar todos los campos del formulario para generar el reportar');
     } else {
       try {
         await fetchCount();
         generarFolio();
         enviarDatos();
-        // setUsuarioReport('');
+        setUsuarioReport('');
         setEquipo('');
         setMarca('');
         setDescripcion('');
@@ -333,19 +326,8 @@ const Reportes = () => {
         type: 'image/jpg',
         name: 'imagen.jpg',
       });
-      // const imageBase64 = await fetch(image)
-      // .then(response => response.blob())
-      // .then(blob => {
-      //   const reader = new FileReader();
-      //   reader.onload = () => {
-      //     const base64Image = reader.result;
-      //     formData.append('image', base64Image);
-      //     // console.log('Base', base64Image); //Validar que la imagen esta siendo enviada de forma correcta
-      //   };
-      //   reader.readAsDataURL(blob);
-      // });
       formData.append('fecha', fechaHora);
-      // formData.append('usuario', usuarioReport);
+      formData.append('usuario', usuarioReport);
       formData.append('encargado', encargado);
       formData.append('departamento', depto);
       formData.append('id', num);
@@ -367,62 +349,27 @@ const Reportes = () => {
         });
     } catch (error) {
       console.error('Error al realizar la solicitud POST:', error);
-      // console.error('Error al enviar la imagen:', error);
     }
   };
 
   const openGmail = async () => {
-  
-    // const emailAddress = 'reporteyfallas@gruca.mx';
-    const emailAddressTest = 'soporte.sistemas@gruca.mx';
-    // const subject = `Se ha registrado un Reporte con el folio: ${folio}`;
-    const subjectTest = `Se ha registrado un reporte con el folio: ${folio}`;
-    // const body = `Se ha enviado un Reporte de ${equipo} debido a que ${descripcion}`;
-    const bodyTest = `Se ha enviado un reporte de ${equipo} debido a ${descripcion}`;
-    // const mailtoUrl = `mailto:${emailAddress}?subject=${subject}&body=${body}`;
-    const mailtoUrl = `mailto:${emailAddressTest}?subject=${subjectTest}&body=${bodyTest}`;
-
+    const emailAddress = 'reporteyfallas@gruca.mx';
+    const subject = `Se ha registrado un reporte con el folio: ${folio}`;
+    const body = `${fullName} ha enviado un reporte de ${equipo} debido a ${descripcion}`;
+    const mailtoUrl = `mailto:${emailAddress}?subject=${subject}&body=${body}`;
+    // const emailAddressTest = 'soporte.sistemas@gruca.mx';
+    // const subjectTest = `Se ha registrado un reporte con el folio: ${folio}`;
+    // const bodyTest = `${usuarioReport} ha enviado un reporte de ${equipo} debido a ${descripcion}`;
+    // const mailtoUrl = `mailto:${emailAddressTest}?subject=${subjectTest}&body=${bodyTest}`;
     Linking.openURL(mailtoUrl);
-
   };
-
   return (
     <View style={styles.container}>
       <ScrollView>
-
       <View style={styles.containerLineInside}>
-        <Text style={styles.text}>Usuario que reporta</Text>
-        <TextInput placeholder='Nombre del usuario...'
-          style={styles.boxBig}
-          onChangeText={(text : any) => {
-            // setUsuarioReport(text);
-            handleState(text);
-          }}
-          // value={usuarioReport}
-          />
+        <Text style={styles.textTitle}>¡Bienvenido!</Text>
+        <Text style={styles.textSubTitle}>{usuarioReport}</Text>
       </View>
-
-      {/* <Text style={styles.text}>Usuario que reporta</Text>
-        <Dropdown
-          style={[styles.dropdown]}
-          placeholderStyle={styles.placeholderStyle}
-          selectedTextStyle={styles.selectedTextStyle}
-          inputSearchStyle={styles.inputSearchStyle}
-          iconStyle={styles.iconStyle}
-          data={useReport}
-          search
-          maxHeight={200}
-          labelField='label'
-          valueField='value'
-          placeholder={!isFocus ? 'Selecciona usuario que reporta' : '...'}
-          searchPlaceholder='Buscar...'
-          value={usuarioReport}
-          onChange={(item : any) => {
-            setUsuarioReport(item.value);
-            handleState(item.value);
-          }}
-        /> */}
-
         <Text style={styles.text}>Maquina a reportar</Text>      
         <Dropdown
           style={[styles.dropdown, isFocus && { borderColor: 'blue' }]}
@@ -495,24 +442,6 @@ const Reportes = () => {
             setIsFocus(false);
         }}/>
         <Text style={styles.text}> Ubicación </Text>
-        {/* <Dropdown
-          style={[styles.dropdown]}
-          placeholderStyle={styles.placeholderStyle}
-          selectedTextStyle={styles.selectedTextStyle}
-          inputSearchStyle={styles.inputSearchStyle}
-          iconStyle={styles.iconStyle}
-          data={ubiData}
-          search
-          maxHeight={200}
-          labelField='label'
-          valueField='value'
-          placeholder={'Seleccione la ubicacion...'}
-          searchPlaceholder='Buscar...'
-          value={ubi}
-          onChange={(item : any) => {
-            
-        }}/> */}
-
         <Dropdown
           style={[styles.dropdown]}
           placeholderStyle={styles.placeholderStyle}
@@ -619,106 +548,119 @@ const Reportes = () => {
 export default Reportes
 
 const styles = StyleSheet.create({
-    container: {
-      backgroundColor:'#e8e8e8',
-      height: '100%',
-      width:'100%',
-      padding: 15,
-    },
-    containerLine: {
-      flexDirection:'row',
-      justifyContent:'space-around',
-      marginVertical: '2%',
-    },
-    containerLineInside: {
-      alignItems:'center',
-    },
-    containerButton:{
-      flexDirection:'row',
-      justifyContent:'space-around',
-      paddingTop:'5%'
-    },
-    LineButtonBorrar: {
-      width: 150
-    },
-    LineButtonTomarFoto: {
-      width: 150
-    },
-    text: {
-      fontSize: 18,
-      marginVertical:'2%',
-    },
-    dropdown: {
-      backgroundColor: '#fff',
-      borderColor: 'gray',
-      borderRadius: 20,
-      paddingLeft:'3%',
-      borderWidth: .5,
-      width: '98%',
-      height: 40,
-    },
-    iconStyle: {
-      backgroundColor:'#3a456f',
-      position: 'relative',
-      tintColor:'white',
-      height: 20,
-      width: 20,
-      right: 15,
-    },
-    placeholderStyle: {
-      fontSize: 16,
-      left:10
-    },
-    selectedTextStyle: {
-      fontSize: 16,
-      left:10,
-      fontWeight:'600',
-      fontStyle:'italic'
-    },
-    inputSearchStyle: {
-      height: 30,
-      fontSize: 18,
-      color:'#242f66'
-    },
-    boxsmall: {
-      backgroundColor: '#fff',
-      paddingHorizontal: 10,
-      marginVertical: '2%',
-      borderColor: 'gray', 
-      textAlign:"center",
-      borderRadius: 20,
-      borderWidth: .5, 
-      width: '100%',
-      height: 40,
-    },
-    boxBig: {
-      backgroundColor: '#fff',
-      paddingHorizontal: 10,
-      marginVertical: '2%',
-      borderColor: 'gray',
-      textAlign:"center",
-      borderRadius: 20,
-      borderWidth: .5, 
-      width: '100%',
-      minHeight: 40,
-      maxHeight: 60,
-    },
-    containerFoto: {      
-      width:'100%',
-      height: 240,
-    },
-    Text: {
-      marginLeft: 20,
-      fontSize: 16,
-      fontWeight: 'bold',
-      marginVertical:'2%'
-    },
-    imagenContainer: {
-      maxWidth:'100%',
-      minWidth:300,
-      height: 300,
-      marginVertical:'2%',
-      resizeMode:"contain",
-      borderRadius: 10,
-    },
+  container: {
+    backgroundColor:'#e8e8e8',
+    height: '100%',
+    width:'100%',
+    padding: 15,
+  },
+  containerLine: {
+    width:'100%',
+    flexDirection:'column',
+    marginVertical: '2%',
+    justifyContent:'center',
+  },
+  containerButton:{
+    flexDirection:'row',
+    justifyContent:'space-around',
+    paddingTop:'5%'
+  },
+  LineButtonBorrar: {
+    width: 150
+  },
+  LineButtonTomarFoto: {
+    width: 150
+  },
+  text: {
+    fontSize: 18,
+    marginVertical:'2%',
+  },
+  textTitle: {
+    fontSize: 26,
+    fontStyle:'italic',
+    fontWeight: '900',
+    marginVertical:'2%',
+  },
+  textSubTitle: {
+    fontSize: 22,
+    fontWeight: '600',
+    marginVertical:'2%',
+  },
+  dropdown: {
+    backgroundColor: '#fff',
+    borderColor: 'gray',
+    borderRadius: 20,
+    paddingLeft:'3%',
+    borderWidth: .5,
+    width: '98%',
+    height: 40,
+  },
+  iconStyle: {
+    backgroundColor:'#3a456f',
+    position: 'relative',
+    tintColor:'white',
+    height: 20,
+    width: 20,
+    right: 15,
+  },
+  placeholderStyle: {
+    fontSize: 16,
+    left:10
+  },
+  selectedTextStyle: {
+    fontSize: 16,
+    left:10,
+    fontWeight:'600',
+    fontStyle:'italic'
+  },
+  inputSearchStyle: {
+    height: 30,
+    fontSize: 18,
+    color:'#242f66'
+  },
+  containerLineInside: {
+    alignItems:'center',
+    width: '100%',
+  },
+  boxsmall: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 10,
+    marginVertical: '2%',
+    borderColor: 'gray', 
+    textAlign:"center",
+    borderRadius: 20,
+    borderWidth: .5, 
+    width: '100%',
+    height: 40,
+  },
+  boxBig: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 10,
+    marginVertical: '2%',
+    borderColor: 'gray',
+    textAlign:"center",
+    borderRadius: 20,
+    borderWidth: .5, 
+    width: '100%',
+    minHeight: 40,
+    maxHeight: 60,
+  },
+  containerFoto: {      
+    width:'100%',
+    height: 240,
+  },
+  Text: {
+    marginLeft: 20,
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginVertical:'2%'
+  },
+  imagenContainer: {
+    maxWidth:'100%',
+    minWidth:300,
+    height: 300,
+    marginVertical:'2%',
+    resizeMode:"contain",
+    borderRadius: 10,
+  },
 });

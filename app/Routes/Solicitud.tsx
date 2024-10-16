@@ -2,11 +2,11 @@ import { View, Text, StyleSheet, TextInput, Alert } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import { Button } from 'react-native-paper';
 import { Linking} from 'react-native';
+import userStore from '../store';
 import moment from 'moment'
 import axios from 'axios'
 
 const Solicitud = () => {
-    // const { nombreUsuario, setNombreUsuario } = useUserContext();
     const [descripcion, setDescripcion] = useState('');
     const [ubicacion, setUbicacion] = useState('');
     const [solicitar, setSolicitar] = useState('');
@@ -16,11 +16,10 @@ const Solicitud = () => {
     const [count, setCount] = useState({});
     const [folio, setFolio] = useState('');
     const [deptos, setDepto] = useState('');
-
-    // const nombreUsuario = 'Oscar Alonso';
-    const encargado = 'Staff Sistemas';
+    const [usuario, setUsuario] = useState('');
 
     useEffect(() => {
+        setUsuario(userStore.usuario);
         fetchCount();
     }, []);
     const fetchCount = async () => {
@@ -52,33 +51,14 @@ const Solicitud = () => {
         
     };
 
-    // useEffect (() =>{
-    // var config = {
-    //     method: 'get',
-    //     url: `http://192.168.0.46:4000/equipos/${nombreUsuario}`,
-    // };
-    // axios(config).then(function (response) {
-    //     const datos = response.data;
-    //     setDeptoValue(datos.map((item : any) => item.Depto));
-    //     setNominaValue(datos.map((item : any) => item.NumNomina));
-    //     if (datos.length > 0) {
-    //         setDepto(datos[0].Depto);
-    //         setNomina(datos[0].NumNomina);
-    //     }
-    // })
-    // .catch(function (error) {
-    // console.error('Error fetching data:', error);
-    // });
-    // }, []);
-
     const enviarDatos = async () => {
         try {
             const fechaHora = moment().format('lll');
             const response = await axios.post('http://192.168.0.46:4000/tickets', {
             tipo: 'Solicitud',
             fecha: fechaHora,
-            // usuario: nombreUsuario,
-            // encargado: nombreUsuario,
+            usuario: usuario,
+            encargado: usuario,
             nomina: nominas.toString(),
             departamento: deptos.toString(),
             reporte: solicitar.toString(),
@@ -93,23 +73,25 @@ const Solicitud = () => {
             });
             
             Alert.alert('Solicitud Enviada');
-            console.log('Respuesta del servidor:', response.data);
+            // console.log('Respuesta del servidor:', response.data);
         } catch (error) {
             Alert.alert('Problemas al enviar Solicitud');
             console.error('Error al realizar la solicitud POST:', error);
-        }   
+        }
     }
     const openGmail = () => {
-        // const emailAddress = 'reporteyfallas@gruca.mx';
-        const emailAddressTest = 'soporte.sistemas@gruca.mx';
+        const emailAddress = 'reporteyfallas@gruca.mx';
         const subject = `Reporte con el folio: ${folio}`;
-        // const body = `${nombreUsuario} ha enviado un Reporte de ${solicitar} debido a que ${descripcion}`
-        const bodyTest = `Se ha enviado un Reporte de ${solicitar} debido a que ${descripcion}`
-        // const mailtoUrl = `mailto:${emailAddress}?subject=${subject}&body=${body}`;
-        const mailtoUrlTest = `mailto:${emailAddressTest}?subject=${subject}&body=${bodyTest}`;
-        Linking.openURL(mailtoUrlTest);
+        const body = `${usuario} ha enviado un Reporte de ${solicitar} debido a que ${descripcion}`
+        const mailtoUrl = `mailto:${emailAddress}?subject=${subject}&body=${body}`;
+        Linking.openURL(mailtoUrl);
+        //CorreoTest
+        // const emailAddressTest = 'soporte.sistemas@gruca.mx';
+        // const subject = `Reporte con el folio: ${folio}`;
+        // const bodyTest = `Se ha enviado un Reporte de ${solicitar} debido a que ${descripcion}`
+        // const mailtoUrlTest = `mailto:${emailAddressTest}?subject=${subject}&body=${bodyTest}`;
+        // Linking.openURL(mailtoUrlTest);
     };
-
     const eventos = async () =>{
         if (solicitar === '' || descripcion === '' || ubicacion === '') {
             Alert.alert('Alerta','Debe llenar todos los campos');
