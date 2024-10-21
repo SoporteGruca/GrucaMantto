@@ -3,6 +3,7 @@ import { TextInput, Image, Alert, Linking } from 'react-native';
 import { StyleSheet, Text, View, ScrollView } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 import AntDesign from '@expo/vector-icons/AntDesign';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import React, { useEffect, useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { Button } from 'react-native-paper';
@@ -10,22 +11,20 @@ import { Camera } from 'expo-camera';
 import userStore from '../store';
 import moment from 'moment';
 import axios from 'axios';
+import { FontAwesome, FontAwesome6, MaterialIcons } from '@expo/vector-icons';
 
 const Tab = createBottomTabNavigator();
 const Reportes = () => {
   //Datos
-  const [isCameraReady, setIsCameraReady] = useState(false);
   const [usuarioReport, setUsuarioReport] = useState('');
-  const [useReport, setuseReportData] = useState([{ }]);
   const [atencionData, setAtencionData] = useState([]);
   const [equipoData, setEquipoData] = useState([{ }]);
   const [marcaData, setMarcaData] = useState([{ }]);
   const [fallaData, setFallaData] = useState([{ }]);
   const [ubiData, setUbiData] = useState([{ }]);
   const [encData, setEncData] = useState([{ }]);
-  const [numData, setnumData] = useState([{ }]);
   const [falla, setFalla] = useState('');
-  let usuario : string = '';
+  // let usuario : string = '';
   //Camara
   const [hasCameraPermission, setHasCameraPermission] = useState({});
   const [image, setImage] = useState('https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster');
@@ -49,14 +48,12 @@ const Reportes = () => {
   const [ubi, setUbi] = useState('');
   const [fullName, setFullNameData] = useState('');
   //Funciones
-  const [selectedValue, setSelectedValue] = useState(null);
   const [isFocus, setIsFocus] = useState(false);
   const [count, setCount] = useState({});
   const [folio, setFolio] = useState('');
 
   useEffect(() => {
-    usuario = userStore.usuario;
-    setUsuarioReport(usuario);
+    setUsuarioReport(userStore.usuario);
     getUserData();
     fetchCount();
     loadMaquina();
@@ -73,14 +70,15 @@ const Reportes = () => {
     axios(config).then(function (response) {
       var count = Object.keys(response.data).length;
       let userArray: any = [];
+      // console.log(response.data);
       for (var i = 0; i < count; i++) {
         userArray.push({
           value: response.data[i].Usuario,
           label: response.data[i].Usuario,
         });
-        if (usuario == response.data[i].Usuario) {
+        if ( userStore.usuario == response.data[i].Usuario ) {
           setFullNameData(response.data[i].NomUsuario);
-          userStore.setFullName(fullName);
+          userStore.setFullName(response.data[i].NomUsuario);
         }
       }
       setAtencionData(userArray); 
@@ -316,7 +314,6 @@ const Reportes = () => {
       }
     }
   };
-
   const enviarDatos = async () => {
     try {
       const fechaHora = moment().format('lll');
@@ -388,7 +385,7 @@ const Reportes = () => {
           onFocus={() => setIsFocus(true)}
           onBlur={() => setIsFocus(false)}
           renderLeftIcon={ () => (
-            <AntDesign color='red' name='tool' size={25} />
+            <MaterialCommunityIcons name="tools" size={24} color="red" />
           )}
           onChange={(item : any) => {
             setEquipo(item.value);
@@ -396,6 +393,7 @@ const Reportes = () => {
             setIsFocus(false);
           }}
         />
+        {/*<AntDesign color='red' name='tools' size={25} /> */}
         <Text style={styles.text}>Descripcion de la maquina</Text>
         <Dropdown
           style={[styles.dropdown, isFocus && { borderColor: 'blue' }]}
@@ -413,6 +411,9 @@ const Reportes = () => {
           value={marca}
           onFocus={() => setIsFocus(true)}
           onBlur={() => setIsFocus(false)}
+          renderLeftIcon={ () => (
+            <FontAwesome name="gears" size={24} color="black" />
+          )}
           onChange={(item : any) => {
             setMarca(item.value);
             handleState2(item.value);
@@ -420,7 +421,7 @@ const Reportes = () => {
             setIsFocus(false);
           }}
         />
-        <Text style={styles.text}> Tipo Falla</Text>
+        <Text style={styles.text}>Tipo Falla</Text>
         <Dropdown
           style={[styles.dropdown, isFocus && { borderColor: 'blue' }]}
           placeholderStyle={styles.placeholderStyle}
@@ -437,11 +438,14 @@ const Reportes = () => {
           value={falla}
           onFocus={() => setIsFocus(true)}
           onBlur={() => setIsFocus(false)}
+          renderLeftIcon={ () => (
+            <MaterialIcons name="sms-failed" size={24} color="black" />
+          )}
           onChange={(item : any) => {
             setFalla(item.value);
             setIsFocus(false);
         }}/>
-        <Text style={styles.text}> Ubicación </Text>
+        <Text style={styles.text}>Ubicación</Text>
         <Dropdown
           style={[styles.dropdown]}
           placeholderStyle={styles.placeholderStyle}
@@ -456,11 +460,13 @@ const Reportes = () => {
           placeholder={'Seleccione la ubicacion...'}
           searchPlaceholder='Buscar...'
           value={ubi}
+          renderLeftIcon={ () => (
+            <MaterialIcons name="location-pin" size={24} color="black" />
+          )}
           onChange={(item : any) => {
             setUbi(item.value);
         }}/>
-
-        <Text style={styles.text}> Operador </Text>
+        <Text style={styles.text}>Operador</Text>
         <Dropdown
           style={[styles.dropdown]}
           placeholderStyle={styles.placeholderStyle}
@@ -474,6 +480,9 @@ const Reportes = () => {
           valueField='value'
           placeholder={'Seleccione al operador...'}
           value={encargado}
+          renderLeftIcon={ () => (
+            <FontAwesome6 name="user-gear" size={24} color="black" />
+          )}
           onChange={(item : any) => {
             setEncargado(item.value);
         }}/>
@@ -541,12 +550,12 @@ const Reportes = () => {
           </Button>
         </View>
       </ScrollView>
+      
     </View>
   );
 }
 
 export default Reportes
-
 const styles = StyleSheet.create({
   container: {
     backgroundColor:'#e8e8e8',
@@ -574,6 +583,7 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 18,
     marginVertical:'2%',
+    textAlign:"center",
   },
   textTitle: {
     fontSize: 26,
@@ -591,7 +601,6 @@ const styles = StyleSheet.create({
     borderColor: 'gray',
     borderRadius: 20,
     paddingLeft:'3%',
-    borderWidth: .5,
     width: '98%',
     height: 40,
   },
@@ -605,7 +614,8 @@ const styles = StyleSheet.create({
   },
   placeholderStyle: {
     fontSize: 16,
-    left:10
+    left:10,
+    textAlign:"center",
   },
   selectedTextStyle: {
     fontSize: 16,
@@ -614,10 +624,10 @@ const styles = StyleSheet.create({
     fontStyle:'italic'
   },
   inputSearchStyle: {
-    height: 30,
+    height: 35,
     fontSize: 18,
-    color:'#242f66'
-  },
+    borderRadius:20,
+    },
   containerLineInside: {
     alignItems:'center',
     width: '100%',
@@ -629,7 +639,6 @@ const styles = StyleSheet.create({
     borderColor: 'gray', 
     textAlign:"center",
     borderRadius: 20,
-    borderWidth: .5, 
     width: '100%',
     height: 40,
   },
@@ -640,7 +649,6 @@ const styles = StyleSheet.create({
     borderColor: 'gray',
     textAlign:"center",
     borderRadius: 20,
-    borderWidth: .5, 
     width: '100%',
     minHeight: 40,
     maxHeight: 60,

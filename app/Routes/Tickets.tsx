@@ -7,7 +7,6 @@ import { Alert } from 'react-native';
 import userStore from '../store';
 import moment from 'moment';
 import axios from 'axios';
-
 const Tickets = () => {  
   //Datas
   const [noTicketData, setNoTicketData] = useState([]);
@@ -20,10 +19,7 @@ const Tickets = () => {
   const [noTicket, setNoTicket] = useState(null);
   const [fechaData, setFechaData] = useState([]);
   const [causaData, setCausaData] = useState([]);
-  const [correo, setCorreoData] = useState([]);
   const [usuario, setUsuario] = useState("");
-  let correoArray: any = [];
-
   //Valores
   const [fotoUri, setFotoUri] = useState('https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster');
   const [atencion, setAtencion] = useState('');
@@ -37,7 +33,8 @@ const Tickets = () => {
   const [folio, setFolio] = useState('');
   let [level, setlevel] = useState('');
   let emailAddress = '';
-  
+  let body = '';
+  let subject ='';
   const estadosData = [ 
     { label: 'En progreso...', value: 'En progreso...' },
     { label: 'Pendiente', value: 'Pendiente' },
@@ -52,9 +49,9 @@ const Tickets = () => {
   const [habCausa, setHabCausa] = useState(false);
   const [habAcciones, setHabAcciones] = useState(false);
   const [habCerrar, setHabCerrar] = useState(false);
-
   useEffect(() => {
     setUsuario(userStore.usuario);
+    setFullNameData(userStore.fullName);
     validarUsuario();
     getUsuarios();
     getFolios();
@@ -68,7 +65,9 @@ const Tickets = () => {
       var count = Object.keys(response.data).length;
       for (var i = 0; i < count; i++) {
         let user = response.data[i]['Usuario'];
+        let email = response.data[i]['correo'];
         let nivelAcceso = response.data[i]['nivelAcceso'];
+        correoArray.push(user, email);
         if ( usuario == user) {
           if (nivelAcceso == 'Consu'){
             setHabReporte (false);
@@ -77,7 +76,7 @@ const Tickets = () => {
             setHabCausa   (false);
             setHabAcciones(false);
             setHabCerrar  (true);
-            Alert.alert('Aviso',`Acceso concedido: ${nivelAcceso} `)
+            // Alert.alert('Aviso',`Acceso concedido: ${nivelAcceso} `)
           }else if (nivelAcceso == 'Operador'){
             setHabReporte (false);
             setHabFecha   (false);
@@ -85,7 +84,7 @@ const Tickets = () => {
             setHabCausa   (true);
             setHabAcciones(false);
             setHabCerrar  (false);
-            Alert.alert('Aviso',`Acceso concedido: ${nivelAcceso} `)
+            // Alert.alert('Aviso',`Acceso concedido: ${nivelAcceso} `)
           }else if (nivelAcceso == 'Admin'){
             setHabReporte (true);
             setHabFecha   (true);
@@ -93,11 +92,11 @@ const Tickets = () => {
             setHabCausa   (true);
             setHabAcciones(true);
             setHabCerrar  (false);
-            Alert.alert('Aviso',`Acceso concedido: ${nivelAcceso} `)
+            // Alert.alert('Aviso',`Acceso concedido: ${nivelAcceso} `)
           }
           setlevel(nivelAcceso);
         }
-      }
+      }      
     })
     .catch(function (error) {
       console.log(error);
@@ -152,7 +151,6 @@ const Tickets = () => {
     var config = {
       method: 'get',
       url: `http://192.168.0.46:4000/maqticket`,
-        // url: `http://192.168.0.46:4000/maquinaseee/${usuario}`,
     };
     axios(config).then(function (response) {
       var count = Object.keys(response.data).length;
@@ -172,32 +170,7 @@ const Tickets = () => {
       console.log(error);
     });
   }
-  const cargarAtencio = () => {
-    var config = {  
-      method: 'get',
-      url: `http://192.168.0.46:4000/users`,
-    };
-    axios(config).then(function (response) {
-      var count = Object.keys(response.data).length;
-      let equipoArray: any = [];
-      for (var i = 0; i < count; i++) {
-        equipoArray.push({
-          value: response.data[i].Usuario,
-          label: response.data[i].Usuario,
-        });
-        correoArray.push({
-          value: response.data[i].Usuario,
-          label: response.data[i].Usuario,
-        });
-      }
-      console.log(correo);
-      setAtencionData(equipoArray); 
-      setCorreoData(correoArray)      
-    })
-    .catch(function (error) {
-      console.log(error);
-    });
-  }
+  let correoArray: any = [];
   const getUsuarios  = async () => {
     var config = {  
       method: 'get',
@@ -210,7 +183,11 @@ const Tickets = () => {
         userArray.push({
           value: response.data[i].Usuario,
           label: response.data[i].Usuario,
+          correo: response.data[i].correo
         });
+        const usuario = response.data[i].Usuario;
+        const email = response.data[i].correo;
+        correoArray.push({ usuario, email});
       }
       setAtencionData(userArray); 
     })
@@ -218,23 +195,40 @@ const Tickets = () => {
       console.log(error);
     });
   }
+  const openGmail = async () => {
+    subject = `Se te ha asignado el siguiente reporte con el folio: ${folio}`;
+    body = `${fullName} ha enviado un reporte de ${repsol} debido a ${motivo}`;
+    const mailtoUrl = `mailto:${emailAddress}?subject=${subject}&body=${body}`;
+    
+    Linking.openURL(mailtoUrl);
+
+
+  };
+  const sendWhatsApp = () => {
+    //Mandar mensaje a grupo de whats, la liga es personalizada.
+    // const link = `https://chat.whatsapp.com/GNnUsdDjAdM2CWD1IeY0um`
+    const phone = 4494832860;
+    const link = `https://wa.me/${phone}?text=${subject} ${body}`
+    Linking.canOpenURL(link).then((supported) => {
+      if (!supported) {
+        Alert.alert('Por favor instale WhatsApp para enviar un mensaje directo');
+      }
+      return Linking.openURL(link);
+    })
+  };
   const cerrarTicket = async () => {
-    if (motivo != '' && causa != '' ) {
-      if (estado === 'Cerrado' && level === "Operador" ) {
+    if (noTicket!= '' && motivo != '' && causa != '' ) {
+
+      if (level === "Operador"  && estado === 'Cerrado' ) {
         Alert.alert('Aviso', 'Usted no cuentan con permisos suficientes para realizar este cambio, el estado de Cerrado solo es para personal de IT / Administrador');
-      } else if ( level === "Cosnu" ){
-        Alert.alert('Aviso', 'Los permisos en tu cuenta no permite realizar esta operacion, favor de consultar con personal de sistemas. \n ¿Quieres mandar correo con tu peticion? ');
+        
       } else{
-        if (atencion == 'Oscar') {
-          emailAddress =  'soporte.sistemas@gruca.mx';
-        }
-        else if (atencion == 'Juanpa') {
-          emailAddress =  'sistemas@gruca.mx';
-        }
-        else if (atencion == 'Mario') {
-          emailAddress =  'mario.roman@gruca.mx';
-        } else {
-          emailAddress =  'soporte.sistemas@gruca.mx';
+        //Buscar el correo deseado
+        const usuarioAtencion = correoArray.find((item : any) => item.usuario === atencion);
+        if ( usuarioAtencion ) {
+          const emailAddress = usuarioAtencion.email;
+          console.log(emailAddress);
+          
         }
         try {
           const fechaHora = moment().format('lll');
@@ -244,8 +238,11 @@ const Tickets = () => {
               fechaCierre: fechaHora,
               estadofinal: `${estado}`}
           );
-          if ( atencion == 'Oscar')
+          openGmail();
+          await new Promise(resolve => setTimeout(resolve, 3000));
           getFolios();
+          limpiarcampos();
+          sendWhatsApp();
           Alert.alert('Aviso', `El Ticket esta ${estado}`);
         } catch (error) {
           console.error('Error', 'Error al realizar la solicitud POST:', error);
@@ -254,149 +251,146 @@ const Tickets = () => {
     } else {
       Alert.alert('Aviso', 'Aun no se puede cerrar este Ticket');
     }
-
-    const openGmail = async () => {
-      // const emailAddress = 'reporteyfallas@gruca.mx';
-      const subject = `Se ha registrado un reporte con el folio: ${folio}`;
-      const body = `${fullName} ha enviado un reporte de ${repsol} debido a ${motivo}`;
-      const mailtoUrl = `mailto:${emailAddress}?subject=${subject}&body=${body}`;
-      // const emailAddressTest = 'soporte.sistemas@gruca.mx';
-      // const subjectTest = `Se ha registrado un reporte con el folio: ${folio}`;
-      // const bodyTest = `${usuarioReport} ha enviado un reporte de ${equipo} debido a ${descripcion}`;
-      // const mailtoUrl = `mailto:${emailAddressTest}?subject=${subjectTest}&body=${bodyTest}`;
-      Linking.openURL(mailtoUrl);
-    };
-    
   };
+  const limpiarcampos = () =>  {
+    setNoTicket(null);
+    setFotoUri('https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster');
+    setAtencion('Juan');
+    setAcciones('');
+    setRepsol('');
+    setMotivo('');
+    setEstado('');
+    setFoto(null);
+    setFecha('');
+    setCausa('');
+    setFolio('');
+  }
+
   return (
-      <View style={styles.container}>
-        <ScrollView>
-          <Text style={styles.Textmain}>Mis Tickets</Text>
-          <Text style={styles.text}>Numero de Ticket</Text>
+  <View style={styles.container}>
+    <ScrollView>
+      <Text style={styles.Textmain}>Mis Tickets</Text>
+      <Text style={styles.text}>Numero de Ticket</Text>
+      <Dropdown
+        style={[styles.dropdown]}
+        placeholderStyle={styles.placeholderStyle}
+        selectedTextStyle={styles.selectedTextStyle}
+        inputSearchStyle={styles.inputSearchStyle}
+        iconStyle={styles.iconStyle}
+        data={noTicketData}
+        search
+        maxHeight={300}
+        labelField='label'
+        valueField='value'
+        placeholder={!isFocus ? 'Seleccione Folio' : '...'}
+        searchPlaceholder='Search...'
+        value={noTicket}
+        onChange={(item : any) => {
+          handleState(item.value);
+          setNoTicket(item.value);
+          validarUsuario();
+        }}
+      />
+      <View style={styles.containerSeparate}>
+        <View style={styles.containerDrop}>
+          <Text style={styles.textCenter}>Equipo reportado</Text>
+          <TextInput style={styles.boxsmall} 
+            placeholder='Equipo reportado'
+            value={repsol}
+            editable={habReporte}
+            />
+        </View>
+        <View style={styles.containerDrop}>
+          <Text style={styles.textCenter}>Fecha del Ticket</Text>
+          <TextInput style={styles.boxsmall}
+            placeholder='Fecha del Ticket'
+            value={fecha} 
+            editable={habFecha}
+            />
+        </View>
+      </View>
+      <View style={styles.contMotivo}>
+        <Text style={styles.textCenter}>Motivo</Text>
+        <TextInput style={styles.boxlarge2}
+          placeholder='Motivo'
+          value={motivo}
+          multiline
+          numberOfLines={6}
+          editable={habMotivo}
+          onChangeText={setMotivo}
+        />
+      </View>
+      <View style={styles.containerSeparate2}>
+        <View style={[styles.containerDrop]}>
+          <Text style={styles.textCenter}>Agente que atiende</Text>
           <Dropdown
             style={[styles.dropdown]}
             placeholderStyle={styles.placeholderStyle}
             selectedTextStyle={styles.selectedTextStyle}
             inputSearchStyle={styles.inputSearchStyle}
             iconStyle={styles.iconStyle}
-            data={noTicketData}
+            data={atencionData}
             search
-            maxHeight={300}
+            maxHeight={200}
             labelField='label'
             valueField='value'
-            placeholder={!isFocus ? 'Seleccione Folio' : '...'}
-            searchPlaceholder='Search...'
-            value={noTicket}
+            placeholder={'Agente que atiende...'}
+            searchPlaceholder='Buscar...'
+            value={atencion}
             onChange={(item : any) => {
-              handleState(item.value);
-              setNoTicket(item.value);
-              validarUsuario();
+              setAtencion(item.value);
             }}
           />
-          <View style={styles.containerSeparate}>
-            <View style={styles.containerDrop}>
-              <Text style={styles.textCenter}>Equipo reportado</Text>
-              <TextInput value={repsol}
-                style={styles.boxsmall}
-                editable={habReporte}
-                />
-            </View>
-            <View style={styles.containerDrop}>
-              <Text style={styles.textCenter}>Fecha del Ticket</Text>
-              <TextInput 
-                value={fecha} 
-                style={styles.boxsmall}
-                editable={habFecha}
-                />
-            </View>
-          </View>
-          <View style={styles.contMotivo}>
-            <Text style={styles.textCenter}>Motivo</Text>
-            <TextInput style={styles.boxlarge2}
-              value={motivo}
-              multiline
-              numberOfLines={6}
-              editable={habMotivo}
-              onChangeText={setMotivo}
-            />
-          </View>
-          <View style={styles.containerSeparate2}>
-            <View style={[styles.containerDrop]}>
-              <Text style={styles.textCenter}>Agente que atiende</Text>
-              <Dropdown
-                style={[styles.dropdown]}
-                placeholderStyle={styles.placeholderStyle}
-                selectedTextStyle={styles.selectedTextStyle}
-                inputSearchStyle={styles.inputSearchStyle}
-                iconStyle={styles.iconStyle}
-                data={atencionData}
-                search
-                maxHeight={200}
-                labelField='label'
-                valueField='value'
-                placeholder={'Agente que atiende...'}
-                searchPlaceholder='Buscar...'
-                value={atencion}
-                onChange={(item : any) => {
-                  setAtencion(item.value);
-                }}
-              />
-            </View>
-            <View style={[styles.containerDrop]}>
-              <Text style={styles.textCenter}>Estado del ticket</Text>      
-              <Dropdown
-                style={[styles.dropdown]}
-                placeholderStyle={styles.placeholderStyle}
-                selectedTextStyle={styles.selectedTextStyle}
-                inputSearchStyle={styles.inputSearchStyle}
-                iconStyle={styles.iconStyle}
-                data={estadosData}
-                search
-                maxHeight={200}
-                labelField='label'
-                valueField='value'
-                placeholder={'Estado del ticket...'}
-                searchPlaceholder='Buscar...'
-                value={estado}
-                onChange={(item : any) => {
-                  setEstado(item.value);
-                }}
-              />
-            </View>
-          </View>
-            <Image style = { styles.imagenContainer }
-              source = {{ uri: fotoUri }}>
-            </Image>
-          <Text style={styles.textCenter}>Causa Raiz</Text>
-          <TextInput value={causa}
-            onChangeText={setCausa}
-            editable={habCausa}
-            style={styles.boxlarge}
+        </View>
+        <View style={[styles.containerDrop]}>
+          <Text style={styles.textCenter}>Estado del ticket</Text>      
+          <Dropdown
+            style={[styles.dropdown]}
+            placeholderStyle={styles.placeholderStyle}
+            selectedTextStyle={styles.selectedTextStyle}
+            inputSearchStyle={styles.inputSearchStyle}
+            iconStyle={styles.iconStyle}
+            data={estadosData}
+            search
+            maxHeight={200}
+            labelField='label'
+            valueField='value'
+            placeholder={'Estado del ticket...'}
+            searchPlaceholder='Buscar...'
+            value={estado}
+            onChange={(item : any) => {
+              setEstado(item.value);
+            }}
           />
-          <Text style={styles.textCenter}>Acciones a Seguir</Text>
-          <TextInput value={acciones}
-            style={styles.boxlarge2}
-            editable={habAcciones}
-            onChangeText={setAcciones}>
-          </TextInput>
-          {/* <TouchableOpacity style={styles.button}
-            onPress={cerrarTicket}
-            >
-            <Text style={styles.Txtboton}>Cerrar Ticket</Text>
-          </TouchableOpacity> */}
-            <Button onPress={ cerrarTicket }
-            style={styles.button}
-            disabled={habCerrar}
-            icon='file-document-edit'
-            mode='contained'
-            buttonColor='#374175'>
-              Actualizar ticket
-          </Button>
-        </ScrollView>
+        </View>
       </View>
+        <Image style = { styles.imagenContainer }
+          source = {{ uri: fotoUri }}>
+        </Image>
+      <Text style={styles.textCenter}>Causa Raiz</Text>
+      <TextInput value={causa}
+        onChangeText={setCausa}
+        editable={habCausa}
+        style={styles.boxlarge}
+      />
+      <Text style={styles.textCenter}>Acciones a Seguir</Text>
+      <TextInput value={acciones}
+        style={styles.boxlarge2}
+        editable={habAcciones}
+        onChangeText={setAcciones}>
+      </TextInput>
+      <Button onPress={ cerrarTicket }
+        style={styles.button}
+        disabled={habCerrar}
+        icon='file-document-edit'
+        mode='contained'
+        buttonColor='#374175'>
+          Actualizar ticket
+      </Button>
+    </ScrollView>
+  </View>
   );
 }
-
 export default Tickets;
 const styles = StyleSheet.create({
   container: {
@@ -414,7 +408,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderColor: 'gray',
     borderRadius: 20,
-    paddingLeft:'3%',
     borderWidth: .5,
     width: '98%',
     height: 40,
@@ -429,13 +422,13 @@ const styles = StyleSheet.create({
   },
   placeholderStyle: {
     fontSize: 16,
-    left:10,
+    textAlign:"center",
   },
   selectedTextStyle: {
     fontSize: 16,
-    left:10,
     fontWeight:'600',
-    fontStyle:'italic'
+    fontStyle:'italic',
+    textAlign:"center",
   },
   inputSearchStyle: {
     height: 30,
@@ -443,10 +436,10 @@ const styles = StyleSheet.create({
     color:'#242f66'
   },
   text: {
-    marginLeft: 20,
     fontSize: 16,
     fontWeight: 'bold',
-    marginVertical:'2%'
+    marginVertical:'2%',
+    textAlign:"center"
   },
   textCenter: {
     fontSize:16,

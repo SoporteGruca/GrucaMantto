@@ -1,14 +1,13 @@
 import { View, Text, Image, Alert, TextInput } from "react-native";
 import { useNavigation } from '@react-navigation/native';
+import React, { useEffect, useState } from "react";
 import { ActivityIndicator } from 'react-native';
 import { Button } from 'react-native-paper';
 import { StyleSheet } from "react-native";
-import React, { useState } from "react";
-import { router } from "expo-router";
-import axios from "axios";
-
 import { observer } from 'mobx-react';
+import { router } from "expo-router";
 import userStore from '../store';
+import axios from "axios";
 
 const Login = ({}) => {
   const navigation = useNavigation();
@@ -18,6 +17,7 @@ const Login = ({}) => {
   //Valores modo test
   // const [contrasena, setContrasena] = useState("1234");
   // const [Usuario, setUsuario] = useState("Oscar");
+  
   const entrar = async () => {
     setLoading(true);
     try {
@@ -53,12 +53,11 @@ const Login = ({}) => {
         <Image style={styles.image} source={require("../../assets/images/login.png")} />
         <View style={styles.textInputContainer}>
           <Text style={styles.textos}>Iniciar Sesion</Text>
-          <TextInput style={styles.textInput}
+          <TextInput style={styles.textInput} 
             placeholder="Usuario"
             value={Usuario}
             onChangeText={setUsuario}
-            >
-          </TextInput>
+          />
           <TextInput style={styles.textInput}
             placeholder="Contraseña"
             secureTextEntry={true}
@@ -137,12 +136,10 @@ const styles = StyleSheet.create({
     marginVertical:20,
     backgroundColor: 'white',
     textAlign:'center',
-    borderBlockColor: 'orange',
-    
   },
   txtBoton: {
     color: "white",
-    borderRadius: 5,
+    borderRadius: 30,
     overflow: "hidden",
     padding: 10,
     fontSize: 18,

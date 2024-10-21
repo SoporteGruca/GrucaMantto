@@ -12,6 +12,7 @@ class UserStore {
     }
     setFullName(newFullName) {
         this.fullName = newFullName;
+        
     }
 }
 const userStore = new UserStore();
