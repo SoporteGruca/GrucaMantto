@@ -1,4 +1,3 @@
-import { useStore } from 'mobx-react';
 import { makeAutoObservable } from "mobx";
 
 class UserStore {
@@ -12,7 +11,6 @@ class UserStore {
     }
     setFullName(newFullName) {
         this.fullName = newFullName;
-        
     }
 }
 const userStore = new UserStore();

@@ -12,12 +12,11 @@ const Solicitud = () => {
     const [solicitar, setSolicitar] = useState('');
     const [nomina, setNominaValue] = useState('');
     const [depto, setDeptoValue] = useState('');
+    const [usuario, setUsuario] = useState('');
     const [nominas, setNomina] = useState('');
+    const [deptos, setDepto] = useState('');
     const [count, setCount] = useState({});
     const [folio, setFolio] = useState('');
-    const [deptos, setDepto] = useState('');
-    const [usuario, setUsuario] = useState('');
-
     useEffect(() => {
         setUsuario(userStore.usuario);
         fetchCount();
@@ -39,18 +38,16 @@ const Solicitud = () => {
         } else {
             console.error('La respuesta no contiene datos válidos:', recordset);
         }
-    }   catch (error) {
+    } catch (error) {
         console.error('Error al obtener el recuento:', error);
         }
     };
-
     const generarFolio = () => {
         const nuevoNumero = parseInt(folio.split('-')[1]) + 1;
         const nuevoFolio = `RE-${nuevoNumero.toString().padStart(4, '0')}`;        
         setFolio(nuevoFolio);
         
     };
-
     const enviarDatos = async () => {
         try {
             const fechaHora = moment().format('lll');
@@ -110,14 +107,12 @@ const Solicitud = () => {
     }
     return (
     <View style={styles.container}>
-        
         <Text style={styles.Text}>Titulo del reporte</Text>
         <TextInput style={styles.boxSmall}
             value={solicitar}
             onChangeText={setSolicitar}
             placeholder='Solicitud a reportar '>
         </TextInput>
-
         <Text style={styles.Text}>Descripcion de la falla o necesidad </Text>
         <TextInput style={styles.boxBig}
             multiline
@@ -126,7 +121,6 @@ const Solicitud = () => {
             onChangeText={setDescripcion}
             placeholder='Describe tu reporte o solicitud'>
         </TextInput>
-
         <Text style={styles.Text}> Ubicación</Text>
         <TextInput style={styles.boxBig}
             multiline
@@ -135,7 +129,6 @@ const Solicitud = () => {
             onChangeText={setUbicacion}
             placeholder='Lugar en donde se requiere el apoyo'>
         </TextInput>
-        
         <View style={styles.containerMidEvent}>
             <Button onPress={ eventos }
                 icon='file'
@@ -144,7 +137,6 @@ const Solicitud = () => {
                 Abrir ticket
             </Button>
         </View>
-
     </View> 
     )
 };
@@ -153,6 +145,7 @@ const styles = StyleSheet.create({
     container:{
         backgroundColor:'#e8e8e8',
         alignItems:'center',
+        paddingTop:'10%',
         height: '100%',
         width: '100%',
         padding: 15,

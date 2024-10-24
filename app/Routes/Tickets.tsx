@@ -7,6 +7,8 @@ import { Alert } from 'react-native';
 import userStore from '../store';
 import moment from 'moment';
 import axios from 'axios';
+
+
 const Tickets = () => {  
   //Datas
   const [noTicketData, setNoTicketData] = useState([]);
@@ -19,11 +21,12 @@ const Tickets = () => {
   const [noTicket, setNoTicket] = useState(null);
   const [fechaData, setFechaData] = useState([]);
   const [causaData, setCausaData] = useState([]);
-  const [usuario, setUsuario] = useState("");
+  let [usuario, setUsuario] = useState("");
   //Valores
   const [fotoUri, setFotoUri] = useState('https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster');
   const [atencion, setAtencion] = useState('');
   const [acciones, setAcciones] = useState('');
+  const [estadoDB, setEstadoDB] = useState('');
   const [repsol, setRepsol] = useState('');
   const [motivo, setMotivo] = useState('');
   const [estado, setEstado] = useState('');
@@ -31,16 +34,14 @@ const Tickets = () => {
   const [fecha, setFecha] = useState('');
   const [causa, setCausa] = useState('');
   const [folio, setFolio] = useState('');
-  let [level, setlevel] = useState('');
-  let emailAddress = '';
-  let body = '';
-  let subject ='';
+  const [level, setlevel] = useState('');
+  const [correo, setCorreo] = useState('');
+  let body = '', subject = '', emailAddress = '', cuenta : any;
   const estadosData = [ 
     { label: 'En progreso...', value: 'En progreso...' },
     { label: 'Pendiente', value: 'Pendiente' },
     { label: 'Liberado', value: 'Liberado' },
     { label: 'Cerrado', value: 'Cerrado' },]
-  //isFocus
   const [isFocus, setIsFocus] = useState(false);
   //habilitados Formulario
   const [habReporte, setHabReporte] = useState(false);
@@ -49,26 +50,38 @@ const Tickets = () => {
   const [habCausa, setHabCausa] = useState(false);
   const [habAcciones, setHabAcciones] = useState(false);
   const [habCerrar, setHabCerrar] = useState(false);
+
   useEffect(() => {
+    usuario = userStore.usuario;
     setUsuario(userStore.usuario);
+    // setUsuario(userStore.usuario);
     setFullNameData(userStore.fullName);
     validarUsuario();
-    getUsuarios();
     getFolios();
   }, []);
-  const validarUsuario  = () => {
-    var config = {
-      method: 'get',
-      url: `http://192.168.0.46:4000/verifica`,
-    };
-    axios(config).then(function (response) {
+  const handleStateAtencionChange = (item : any) => {
+    setAtencion(item)
+    validarUsuario(item);
+  }
+  const validarUsuario = (atencion?: any) => {
+    axios.get(`http://192.168.0.46:4000/verifica`).then(function (response) {
+      cuenta = response.data.map((item : any) => ( {
+        nombre: item['Usuario'],
+        email: item['correo'],
+      }));
       var count = Object.keys(response.data).length;
+      let userArray: any = [];
       for (var i = 0; i < count; i++) {
+        if (response.data[i].correo) {
+          userArray.push({
+            value: response.data[i].Usuario,
+            label: response.data[i].Usuario,
+          });
+        }
         let user = response.data[i]['Usuario'];
-        let email = response.data[i]['correo'];
         let nivelAcceso = response.data[i]['nivelAcceso'];
-        correoArray.push(user, email);
-        if ( usuario == user) {
+        if ( usuario === user) {
+          setlevel(nivelAcceso);
           if (nivelAcceso == 'Consu'){
             setHabReporte (false);
             setHabFecha   (false);
@@ -76,40 +89,38 @@ const Tickets = () => {
             setHabCausa   (false);
             setHabAcciones(false);
             setHabCerrar  (true);
-            // Alert.alert('Aviso',`Acceso concedido: ${nivelAcceso} `)
-          }else if (nivelAcceso == 'Operador'){
+          }else if (nivelAcceso == 'User'){
             setHabReporte (false);
             setHabFecha   (false);
             setHabMotivo  (true);
             setHabCausa   (true);
             setHabAcciones(false);
             setHabCerrar  (false);
-            // Alert.alert('Aviso',`Acceso concedido: ${nivelAcceso} `)
-          }else if (nivelAcceso == 'Admin'){
-            setHabReporte (true);
-            setHabFecha   (true);
+          }else if (nivelAcceso == 'Admin' || nivelAcceso == 'Poweruser'){
+            setHabReporte (false);
+            setHabFecha   (false);
             setHabMotivo  (true);
             setHabCausa   (true);
             setHabAcciones(true);
             setHabCerrar  (false);
-            // Alert.alert('Aviso',`Acceso concedido: ${nivelAcceso} `)
           }
-          setlevel(nivelAcceso);
+          cuenta.forEach((item : any) => {
+            if (item.nombre === atencion) {
+              emailAddress = item.email;
+            } 
+          });
         }
-      }      
+      }
+      setAtencionData(userArray); 
     })
     .catch(function (error) {
       console.log(error);
     });
   }
   const handleState = (folioDB : string) => {
-    var config = {
-      method: 'get',
-      url: `http://192.168.0.46:4000/maquinases/${folioDB}`,
-    };
     setFolio(folioDB);
     loadImage(folioDB);
-    axios(config).then(function (response) {
+    axios.get(`http://192.168.0.46:4000/maquinases/${folioDB}`).then(function (response) {
       const datos = response.data;
       setRepsolData  (datos.map((item : any) => item['Maquina']));
       setFechaData   (datos.map((item : any) => item['Fecha Inicio']));
@@ -125,6 +136,7 @@ const Tickets = () => {
         setCausa    (datos[0]['Causa Raiz']);
         setAcciones (datos[0]['Acciones a Seguir']);
         setEstado   (datos[0]['Estado del Ticket']);
+        setEstadoDB   (datos[0]['Estado del Ticket']);
       }      
       })
     .catch(function (error) {
@@ -148,21 +160,14 @@ const Tickets = () => {
       });
   }
   const getFolios  = async () => {
-    var config = {
-      method: 'get',
-      url: `http://192.168.0.46:4000/maqticket`,
-    };
-    axios(config).then(function (response) {
+    axios.get(`http://192.168.0.46:4000/maqticket`).then(function (response) {
       var count = Object.keys(response.data).length;
       let Array: any = [];
       for (var i = 0; i < count; i++) {
-        if (response.data[i]['Estado del Ticket'] == 'Pendiente' || response.data[i]['Estado del Ticket'] == 'En progreso...') {
-          // console.log(response.data[i]['Estado del Ticket']);
           Array.push({
             value: response.data[i]['Folio'],
             label: response.data[i]['Folio'],
           });
-        }
       }
       setNoTicketData(Array);
     })
@@ -170,43 +175,13 @@ const Tickets = () => {
       console.log(error);
     });
   }
-  let correoArray: any = [];
-  const getUsuarios  = async () => {
-    var config = {  
-      method: 'get',
-      url: `http://192.168.0.46:4000/users`,
-    };
-    axios(config).then(function (response) {
-      var count = Object.keys(response.data).length;
-      let userArray: any = [];
-      for (var i = 0; i < count; i++) {
-        userArray.push({
-          value: response.data[i].Usuario,
-          label: response.data[i].Usuario,
-          correo: response.data[i].correo
-        });
-        const usuario = response.data[i].Usuario;
-        const email = response.data[i].correo;
-        correoArray.push({ usuario, email});
-      }
-      setAtencionData(userArray); 
-    })
-    .catch(function (error) {
-      console.log(error);
-    });
-  }
   const openGmail = async () => {
     subject = `Se te ha asignado el siguiente reporte con el folio: ${folio}`;
-    body = `${fullName} ha enviado un reporte de ${repsol} debido a ${motivo}`;
+    body = `${fullName} ha enviado un reporte de ${repsol} debido a ${motivo}, el ticket se encuentra con el siguiete estado: ${estado}`;
     const mailtoUrl = `mailto:${emailAddress}?subject=${subject}&body=${body}`;
-    
     Linking.openURL(mailtoUrl);
-
-
   };
   const sendWhatsApp = () => {
-    //Mandar mensaje a grupo de whats, la liga es personalizada.
-    // const link = `https://chat.whatsapp.com/GNnUsdDjAdM2CWD1IeY0um`
     const phone = 4494832860;
     const link = `https://wa.me/${phone}?text=${subject} ${body}`
     Linking.canOpenURL(link).then((supported) => {
@@ -217,45 +192,55 @@ const Tickets = () => {
     })
   };
   const cerrarTicket = async () => {
-    if (noTicket!= '' && motivo != '' && causa != '' ) {
-
-      if (level === "Operador"  && estado === 'Cerrado' ) {
-        Alert.alert('Aviso', 'Usted no cuentan con permisos suficientes para realizar este cambio, el estado de Cerrado solo es para personal de IT / Administrador');
-        
-      } else{
-        //Buscar el correo deseado
-        const usuarioAtencion = correoArray.find((item : any) => item.usuario === atencion);
-        if ( usuarioAtencion ) {
-          const emailAddress = usuarioAtencion.email;
-          console.log(emailAddress);
-          
-        }
-        try {
-          const fechaHora = moment().format('lll');
-          const response = await axios.put(
-            `http://192.168.0.46:4000/maquinase/${noTicket}`, {
-              atendio: atencion,
-              fechaCierre: fechaHora,
-              estadofinal: `${estado}`}
-          );
-          openGmail();
-          await new Promise(resolve => setTimeout(resolve, 3000));
-          getFolios();
-          limpiarcampos();
-          sendWhatsApp();
-          Alert.alert('Aviso', `El Ticket esta ${estado}`);
-        } catch (error) {
-          console.error('Error', 'Error al realizar la solicitud POST:', error);
-        }
+    if (noTicket!= '' && motivo != '' && atencion != '' && causa != '' ) {
+      if (level === 'User' && estadoDB === 'Cerrado' && estado === 'liberado' || level === 'Poweruser' && estadoDB === 'Liberado' && estado === 'Cerrar') {
+        enviarDatos();
+      } else if (level === 'User' && estadoDB !== 'Cerrado' && estado === 'Cerrado' || level === 'Poweruser' && estadoDB !== 'Liberado' && estado === 'Liberado' ) {
+        Alert.alert('Aviso', 'No se puede completar la operacion solicitada, es necesario que revises los permisos de tu cuenta')
+      } else if ( level === 'Admin' && estadoDB === 'Cerrado') {
+        enviarDatos();
+      } else if ( estadoDB === 'Cerrado') {
+        Alert.alert('Aviso', 'El ticket ya no puede ser modificado una vez cerrado');
+      } else {
+        enviarDatos();
       }
     } else {
-      Alert.alert('Aviso', 'Aun no se puede cerrar este Ticket');
+      Alert.alert('Aviso', 'Favor de rellenar los campos faltantes, para continuar.');
     }
   };
+
+  const enviarDatos = async function name() {
+    
+    if (atencion === 'Oscar') {
+      emailAddress = 'soporte.sistemas@gruca.mx'
+    } else if (atencion === 'Juanpa') {
+      emailAddress = 'sistemas@gruca.mx' 
+    } else if (atencion === 'Mario') {
+      emailAddress = 'mario.roman@gruca.mx' 
+    }
+    try {
+      const fechaHora = moment().format('lll');
+      const response = await axios.put(
+        `http://192.168.0.46:4000/maquinase/${noTicket}`, {
+          atendio: atencion,
+          fechaCierre: fechaHora,
+          estadofinal: `${estado}`}
+      );
+      openGmail();
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      sendWhatsApp();
+      getFolios();
+      limpiarcampos();
+      Alert.alert('Aviso', `El Ticket esta ${estado}`);
+    } catch (error) {
+      console.error('Error', 'Error al realizar la solicitud POST:', error);
+    }
+
+  }
   const limpiarcampos = () =>  {
     setNoTicket(null);
     setFotoUri('https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster');
-    setAtencion('Juan');
+    setAtencion('');
     setAcciones('');
     setRepsol('');
     setMotivo('');
@@ -288,7 +273,6 @@ const Tickets = () => {
         onChange={(item : any) => {
           handleState(item.value);
           setNoTicket(item.value);
-          validarUsuario();
         }}
       />
       <View style={styles.containerSeparate}>
@@ -338,7 +322,7 @@ const Tickets = () => {
             searchPlaceholder='Buscar...'
             value={atencion}
             onChange={(item : any) => {
-              setAtencion(item.value);
+              handleStateAtencionChange(item.value);
             }}
           />
         </View>
@@ -394,21 +378,21 @@ const Tickets = () => {
 export default Tickets;
 const styles = StyleSheet.create({
   container: {
+    backgroundColor:'#e8e8e8',
+    paddingTop:'10%',
     height: '100%',
     width: '100%',
     padding: 15,
-    backgroundColor:'#e8e8e8',
   },
   Textmain: {
-    fontSize: 30,
-    marginBottom: 10,
     textAlign:'center',
+    marginBottom: 10,
+    fontSize: 30,
   },
   dropdown: {
     backgroundColor: '#fff',
     borderColor: 'gray',
     borderRadius: 20,
-    borderWidth: .5,
     width: '98%',
     height: 40,
   },
@@ -421,80 +405,77 @@ const styles = StyleSheet.create({
     right: 15,
   },
   placeholderStyle: {
-    fontSize: 16,
     textAlign:"center",
+    fontSize: 16,
   },
   selectedTextStyle: {
-    fontSize: 16,
-    fontWeight:'600',
-    fontStyle:'italic',
     textAlign:"center",
+    fontStyle:'italic',
+    fontWeight:'600',
+    fontSize: 16,
   },
   inputSearchStyle: {
-    height: 30,
+    color:'#242f66',
     fontSize: 18,
-    color:'#242f66'
+    height: 30,
   },
   text: {
-    fontSize: 16,
-    fontWeight: 'bold',
     marginVertical:'2%',
-    textAlign:"center"
+    fontWeight: 'bold',
+    textAlign:'center',
+    fontSize: 16,
   },
   textCenter: {
-    fontSize:16,
     marginVertical:'2%',
     textAlign:'center',
+    fontSize:16,
   },
   boxlarge: {
+    backgroundColor: '#fff',
+    borderColor: 'gray',
+    textAlign: 'center',
+    borderRadius: 20,
+    color: '#000000',
     width: '100%',
     height: 40,
-    borderWidth: 1,
-    borderColor: 'gray',
-    borderRadius: 20,
-    backgroundColor: '#fff',
-    textAlign: 'center',
-    color: '#000000',
   },
   boxlarge2: {
+    backgroundColor: '#fff',
+    borderColor: 'gray', 
+    textAlign: 'center',
+    color: '#000000',
+    borderRadius: 20,
     width: '100%',
     height: 80,
-    borderWidth: 1, 
-    borderColor: 'gray', 
-    borderRadius: 20,
-    backgroundColor: '#fff',
-    textAlign: 'center',
-    color: '#000000',
   },
   boxsmall: {
-    width: '100%',
-    height: 40,
-    borderWidth: 1,
-    borderRadius: 20,
+    backgroundColor: '#fff',
     borderColor: 'gray', 
     textAlign: 'center',
-    backgroundColor: '#fff',
     color: '#000000',
+    borderRadius: 20,
+    width: '100%',
+    height: 40,
   },
   contMotivo: {
     alignItems:'center',
   },
   containerSeparate: {
-    width:'100%',
     flexDirection: 'column',
-    marginVertical:'2%'
+    marginVertical:'2%',
+    width:'100%',
   },
   containerSeparate2: {
-    width:'100%',
     justifyContent: 'space-evenly',
+    width:'100%',
   },
   containerDrop: {
-    width:'100%',
     marginVertical:'2%',
+    width:'100%',
   },
   button: {
+    marginVertical: '10%',
     alignItems: 'center',
-    marginVertical: '10%'
   },
   Txtboton: {
     backgroundColor: '#b01212',
@@ -506,10 +487,9 @@ const styles = StyleSheet.create({
     width: '60%',
   },
   imagenContainer: {
+    marginVertical: '4%',
     maxWidth:'100%',
     minWidth:300,
     height: 300,
-    marginVertical: '4%',
   },
 });
-

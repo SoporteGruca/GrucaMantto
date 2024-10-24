@@ -8,61 +8,52 @@ import Solicitud from './Solicitud';
 
 const Tab = createBottomTabNavigator();
 
-function HomeScreen() {
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Reporte de Equipos</Text>
-    </View>
-    );
-  }
-  
-  function SettingsScreen() {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>Mis tickets</Text>
-      </View>
-    );
-  }
-
 export default function Formulario() {  
   return (
     <Tab.Navigator screenOptions={{ headerShown: false,
       tabBarActiveBackgroundColor: "#242f66",
+      tabBarInactiveTintColor: "#242f66",
       tabBarActiveTintColor: "white",
-      tabBarInactiveTintColor: "#242f66"
     }}>
-
     <Tab.Screen 
       name="Reportes" 
       component={Reportes}
       options={{
         tabBarIcon: ({ color, size }) => (
-          <Ionicons name="bug" color={color} size={size} />
+          <Ionicons name="bug" color={ color } size={ size } />
         ),
+        tabBarLabel: 'Reportes',
+        tabBarLabelStyle: {
+          fontSize: 16,
+        }
       }}
     />
-
     <Tab.Screen
       name="Solicitud"
       component={Solicitud} 
       options={{
         tabBarIcon: ({ color, size }) => (
-          <Ionicons name="document-outline" color={color} size={size} />
+          <Ionicons name="document-outline" color={ color } size={ size } />
         ),
+        tabBarLabel: 'Solicitud',
+        tabBarLabelStyle: {
+          fontSize: 16,
+        }
       }}
     />
-
     <Tab.Screen 
-      name="Tickets"
+      name="Mis tickets"
       component={Tickets} 
       options={{
         tabBarIcon: ({ color, size }) => (
-          <Ionicons name="server-outline" color={color} size={size} />
+          <Ionicons name="server-outline" color={ color } size={ size } />
         ),
+        tabBarLabel: 'Mis tickets',
+        tabBarLabelStyle: {
+          fontSize: 16,
+        }
       }}
     />
-
-
     </Tab.Navigator>
   );
 }

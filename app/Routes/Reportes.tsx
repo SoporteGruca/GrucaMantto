@@ -1,9 +1,9 @@
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { TextInput, Image, Alert, Linking } from 'react-native';
-import { StyleSheet, Text, View, ScrollView } from 'react-native';
-import { Dropdown } from 'react-native-element-dropdown';
-import AntDesign from '@expo/vector-icons/AntDesign';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { FontAwesome, FontAwesome6, MaterialIcons } from '@expo/vector-icons';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { StyleSheet, Text, View, ScrollView } from 'react-native';
+import { TextInput, Image, Alert, Linking } from 'react-native';
+import { Dropdown } from 'react-native-element-dropdown';
 import React, { useEffect, useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { Button } from 'react-native-paper';
@@ -11,7 +11,6 @@ import { Camera } from 'expo-camera';
 import userStore from '../store';
 import moment from 'moment';
 import axios from 'axios';
-import { FontAwesome, FontAwesome6, MaterialIcons } from '@expo/vector-icons';
 
 const Tab = createBottomTabNavigator();
 const Reportes = () => {
@@ -24,10 +23,9 @@ const Reportes = () => {
   const [ubiData, setUbiData] = useState([{ }]);
   const [encData, setEncData] = useState([{ }]);
   const [falla, setFalla] = useState('');
-  // let usuario : string = '';
   //Camara
-  const [hasCameraPermission, setHasCameraPermission] = useState({});
   const [image, setImage] = useState('https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster');
+  const [hasCameraPermission, setHasCameraPermission] = useState({});
   //Valores para Test
   // const [descripcion, setDescripcion] = useState('Mantenimiento Correctivo');
   // const [marca, setMarca] = useState('Balanceadora Hofmann (Leeson)');
@@ -63,14 +61,9 @@ const Reportes = () => {
     loadIncidencia();
   }, []);
   const getUserData  = async () => { //Get tje full name of  the user
-    var config = {  
-      method: 'get',
-      url: `http://192.168.0.46:4000/verifica`,
-    };
-    axios(config).then(function (response) {
+    axios.get(`http://192.168.0.46:4000/verifica`).then(function (response) {
       var count = Object.keys(response.data).length;
       let userArray: any = [];
-      // console.log(response.data);
       for (var i = 0; i < count; i++) {
         userArray.push({
           value: response.data[i].Usuario,
@@ -112,11 +105,7 @@ const Reportes = () => {
     }
   };
   const loadMaquina = (() => {
-    var config = {
-      method: 'get',
-      url: `http://192.168.0.46:4000/maquinas`,
-  };
-  axios(config).then(function (response) {
+  axios.get(`http://192.168.0.46:4000/maquinas`).then(function (response) {
     var count = Object.keys(response.data).length;
     let equipoArray = [];
     for (var i = 0; i < count; i++) {
@@ -132,11 +121,7 @@ const Reportes = () => {
   });
   })
   const loadEncargado = (() => {
-    var config = {
-      method: 'get',
-      url: `http://192.168.0.46:4000/encargado`,
-    };
-    axios(config).then(function (response) {      
+    axios.get(`http://192.168.0.46:4000/encargado`).then(function (response) {      
       var count = Object.keys(response.data).length;   
       let equipoArray = [];      
         for (var i = 0; i < count; i++) {
@@ -152,11 +137,7 @@ const Reportes = () => {
     });
   })
   const loadUbicacion = (() => {
-    var config = {
-      method: 'get',
-      url: `http://192.168.0.46:4000/ubicacion`,
-    };
-    axios(config).then(function (response) {
+    axios.get(`http://192.168.0.46:4000/ubicacion`).then(function (response) {
       var count = Object.keys(response.data).length;      
       let equipoArray : any = [];      
         for (var i = 0; i < count; i++) {
@@ -177,11 +158,7 @@ const Reportes = () => {
     setFolio(nuevoFolio);
   };
   const loadIncidencia = (() => {
-    var config = {
-      method: 'get',
-      url: `http://192.168.0.46:4000/maquinasi`,
-    };
-    axios(config).then(function (response) {
+    axios.get(`http://192.168.0.46:4000/maquinasi`).then(function (response) {
       var count = Object.keys(response.data).length;
       let equipoArray = [];
         for (var i = 0; i < count; i++) {
@@ -197,11 +174,7 @@ const Reportes = () => {
     });
   });
   const handleState = (clasmaq: any) => {
-    var config = {
-      method: 'get',
-      url: `http://192.168.0.46:4000/maquinas/${clasmaq}`,
-    };
-    axios(config).then(function (response) {
+    axios.get(`http://192.168.0.46:4000/maquinas/${clasmaq}`).then(function (response) {
       var count = Object.keys(response.data).length;
       let marcaArray = [];
       for (var i = 0; i < count; i++) {
@@ -217,23 +190,12 @@ const Reportes = () => {
     });
   };
   const handleState2 = (equipoMarca: any) => {
-    var config = {
-      method: 'get',
-      url: `http://192.168.0.46:4000/maquinas/${equipo}/${equipoMarca}`,
-    }
-    //Secccion de ubucaicon charge.
-    var configMaq = {
-      method: 'get',
-      url: `http://192.168.0.46:4000/maqUbica/${equipoMarca}`,
-    }
-    axios(configMaq).then(function (response) {
+    axios.get(`http://192.168.0.46:4000/maqUbica/${equipoMarca}`).then(function (response) {
       const datos = response.data;
-      // console.log(datos);
-      let ubiArray : any[] = [];
-      let encArray : any[] = [];
-      let numArray : any[] = [];
-      let depArray : any[] = [];
-      // console.log(response.data[0].UbicaMaq);
+      let ubiArray = [];
+      let encArray = [];
+      let numArray = [];
+      let depArray = [];
       for (var i = 0; i < datos.length; i++) {
         ubiArray.push({
           value: datos[i].UbicaMaq,
@@ -286,8 +248,8 @@ const Reportes = () => {
       </Text>
     );
   }
-  const ambos = async () => {
-    if (usuarioReport === '' || equipo === '' || marca === '' || descripcion === '' || encargado === '' || num === '' || image === 'https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster' ) {
+  const reportar = async () => {
+    if (equipo === '' || marca === '' || falla === '' || ubi === '' || encargado === '' || num === '' || depto === ''|| descripcion === '' ||   image === 'https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster' ) {
       Alert.alert('Debe llenar todos los campos del formulario para generar el reportar');
     } else {
       try {
@@ -393,7 +355,6 @@ const Reportes = () => {
             setIsFocus(false);
           }}
         />
-        {/*<AntDesign color='red' name='tools' size={25} /> */}
         <Text style={styles.text}>Descripcion de la maquina</Text>
         <Dropdown
           style={[styles.dropdown, isFocus && { borderColor: 'blue' }]}
@@ -417,7 +378,6 @@ const Reportes = () => {
           onChange={(item : any) => {
             setMarca(item.value);
             handleState2(item.value);
-            // loadState(item.value)
             setIsFocus(false);
           }}
         />
@@ -542,7 +502,7 @@ const Reportes = () => {
           </View>
         </View>
         <View style={styles.container}>
-          <Button onPress={ambos}
+          <Button onPress={reportar}
             icon='mail'
             mode='contained'
             buttonColor='#374175'>
@@ -550,18 +510,19 @@ const Reportes = () => {
           </Button>
         </View>
       </ScrollView>
-      
     </View>
   );
 }
 
 export default Reportes
+
 const styles = StyleSheet.create({
   container: {
     backgroundColor:'#e8e8e8',
     height: '100%',
     width:'100%',
     padding: 15,
+    paddingTop:'10%',
   },
   containerLine: {
     width:'100%',
@@ -589,7 +550,7 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontStyle:'italic',
     fontWeight: '900',
-    marginVertical:'2%',
+    marginVertical:'4%',
   },
   textSubTitle: {
     fontSize: 22,
@@ -670,5 +631,5 @@ const styles = StyleSheet.create({
     marginVertical:'2%',
     resizeMode:"contain",
     borderRadius: 10,
-  },
+  }
 });

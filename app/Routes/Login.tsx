@@ -1,22 +1,22 @@
 import { View, Text, Image, Alert, TextInput } from "react-native";
 import { useNavigation } from '@react-navigation/native';
-import React, { useEffect, useState } from "react";
 import { ActivityIndicator } from 'react-native';
 import { Button } from 'react-native-paper';
 import { StyleSheet } from "react-native";
+import React, { useState } from "react";
 import { observer } from 'mobx-react';
 import { router } from "expo-router";
 import userStore from '../store';
 import axios from "axios";
 
 const Login = ({}) => {
-  const navigation = useNavigation();
-  const [Usuario, setUsuario] = useState('');
+  const navigation : any = useNavigation();
   const [loading, setLoading] = useState(false); // Nuevo estado para el ActivityIndicator
+  const [Usuario, setUsuario] = useState('');
   const [contrasena, setContrasena] = useState('');
   //Valores modo test
-  // const [contrasena, setContrasena] = useState("1234");
   // const [Usuario, setUsuario] = useState("Oscar");
+  // const [contrasena, setContrasena] = useState("1234");
   
   const entrar = async () => {
     setLoading(true);
@@ -28,7 +28,8 @@ const Login = ({}) => {
       const data = response.data;
       if (data.success) {
         userStore.setUsuario(Usuario);
-        router.push("/Routes/Forms");
+        navigation.navigate("Formulario");
+        // router.push("/Routes/Forms");
         setContrasena("");
         setUsuario("");
       } else {
