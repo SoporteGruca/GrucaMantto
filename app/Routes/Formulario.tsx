@@ -5,9 +5,7 @@ import { StyleSheet } from 'react-native';
 import Reportes from './Reportes';
 import Tickets from './Tickets';
 import Solicitud from './Solicitud';
-
 const Tab = createBottomTabNavigator();
-
 export default function Formulario() {  
   return (
     <Tab.Navigator screenOptions={{ headerShown: false,
@@ -28,7 +26,7 @@ export default function Formulario() {
         }
       }}
     />
-    <Tab.Screen
+    {/* <Tab.Screen
       name="Solicitud"
       component={Solicitud} 
       options={{
@@ -40,7 +38,7 @@ export default function Formulario() {
           fontSize: 16,
         }
       }}
-    />
+    /> */}
     <Tab.Screen 
       name="Mis tickets"
       component={Tickets} 
@@ -57,7 +55,6 @@ export default function Formulario() {
     </Tab.Navigator>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     height: "100%",

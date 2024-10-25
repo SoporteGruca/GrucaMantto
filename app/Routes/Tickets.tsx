@@ -30,12 +30,12 @@ const Tickets = () => {
   const [repsol, setRepsol] = useState('');
   const [motivo, setMotivo] = useState('');
   const [estado, setEstado] = useState('');
+  const [correo, setCorreo] = useState('');
   const [foto, setFoto] = useState(null);
   const [fecha, setFecha] = useState('');
   const [causa, setCausa] = useState('');
   const [folio, setFolio] = useState('');
-  const [level, setlevel] = useState('');
-  const [correo, setCorreo] = useState('');
+  let [level, setlevel] = useState('');
   let body = '', subject = '', emailAddress = '', cuenta : any;
   const estadosData = [ 
     { label: 'En progreso...', value: 'En progreso...' },
@@ -82,6 +82,7 @@ const Tickets = () => {
         let nivelAcceso = response.data[i]['nivelAcceso'];
         if ( usuario === user) {
           setlevel(nivelAcceso);
+          level = nivelAcceso;
           if (nivelAcceso == 'Consu'){
             setHabReporte (false);
             setHabFecha   (false);
@@ -164,10 +165,20 @@ const Tickets = () => {
       var count = Object.keys(response.data).length;
       let Array: any = [];
       for (var i = 0; i < count; i++) {
+        if (level === 'Admin' || level === 'Poweruser' ) {
           Array.push({
             value: response.data[i]['Folio'],
             label: response.data[i]['Folio'],
           });
+        } else{
+          if (usuario === response.data[i]['Usuario que Reporta']) {
+            Array.push({
+              value: response.data[i]['Folio'],
+              label: response.data[i]['Folio'],
+            });
+          }
+        }
+        
       }
       setNoTicketData(Array);
     })
@@ -208,9 +219,7 @@ const Tickets = () => {
       Alert.alert('Aviso', 'Favor de rellenar los campos faltantes, para continuar.');
     }
   };
-
   const enviarDatos = async function name() {
-    
     if (atencion === 'Oscar') {
       emailAddress = 'soporte.sistemas@gruca.mx'
     } else if (atencion === 'Juanpa') {
@@ -235,7 +244,6 @@ const Tickets = () => {
     } catch (error) {
       console.error('Error', 'Error al realizar la solicitud POST:', error);
     }
-
   }
   const limpiarcampos = () =>  {
     setNoTicket(null);
@@ -250,7 +258,6 @@ const Tickets = () => {
     setCausa('');
     setFolio('');
   }
-
   return (
   <View style={styles.container}>
     <ScrollView>

@@ -12,11 +12,11 @@ import axios from "axios";
 const Login = ({}) => {
   const navigation : any = useNavigation();
   const [loading, setLoading] = useState(false); // Nuevo estado para el ActivityIndicator
-  const [Usuario, setUsuario] = useState('');
-  const [contrasena, setContrasena] = useState('');
+  // const [Usuario, setUsuario] = useState('');
+  // const [contrasena, setContrasena] = useState('');
   //Valores modo test
-  // const [Usuario, setUsuario] = useState("Oscar");
-  // const [contrasena, setContrasena] = useState("1234");
+  const [Usuario, setUsuario] = useState("Oscar");
+  const [contrasena, setContrasena] = useState("1234");
   
   const entrar = async () => {
     setLoading(true);

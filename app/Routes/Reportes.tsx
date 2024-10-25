@@ -26,17 +26,8 @@ const Reportes = () => {
   //Camara
   const [image, setImage] = useState('https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster');
   const [hasCameraPermission, setHasCameraPermission] = useState({});
-  //Valores para Test
-  // const [descripcion, setDescripcion] = useState('Mantenimiento Correctivo');
-  // const [marca, setMarca] = useState('Balanceadora Hofmann (Leeson)');
-  // const [encargado, setEncargado] = useState('Alejandro Ramirez');
-  // const [equipo, setEquipo] = useState('Balanceadora');
-  // const [depto, setDepto] = useState('Habilitado');
-  // const [fotoUri, setFotoUri] = useState(null);
-  // const [ubi, setUbi] = useState('Almacén');
-  // const [num, setNum] = useState('1234');
-//Valores limpios
   const [descripcion, setDescripcion] = useState('');
+  const [fullName, setFullName] = useState('');
   const [encargado, setEncargado] = useState('');
   const [fotoUri, setFotoUri] = useState(null);
   const [equipo, setEquipo] = useState('');
@@ -44,7 +35,6 @@ const Reportes = () => {
   const [depto, setDepto] = useState('');
   const [num, setNum] = useState('');
   const [ubi, setUbi] = useState('');
-  const [fullName, setFullNameData] = useState('');
   //Funciones
   const [isFocus, setIsFocus] = useState(false);
   const [count, setCount] = useState({});
@@ -70,7 +60,7 @@ const Reportes = () => {
           label: response.data[i].Usuario,
         });
         if ( userStore.usuario == response.data[i].Usuario ) {
-          setFullNameData(response.data[i].NomUsuario);
+          setFullName(response.data[i].NomUsuario);
           userStore.setFullName(response.data[i].NomUsuario);
         }
       }
@@ -381,30 +371,6 @@ const Reportes = () => {
             setIsFocus(false);
           }}
         />
-        <Text style={styles.text}>Tipo Falla</Text>
-        <Dropdown
-          style={[styles.dropdown, isFocus && { borderColor: 'blue' }]}
-          placeholderStyle={styles.placeholderStyle}
-          selectedTextStyle={styles.selectedTextStyle}
-          inputSearchStyle={styles.inputSearchStyle}
-          iconStyle={styles.iconStyle}
-          data={fallaData}
-          search
-          maxHeight={200}
-          labelField='label'
-          valueField='value'
-          placeholder={!isFocus ? 'Seleccione la falla' : '...'}
-          searchPlaceholder='Buscar...'
-          value={falla}
-          onFocus={() => setIsFocus(true)}
-          onBlur={() => setIsFocus(false)}
-          renderLeftIcon={ () => (
-            <MaterialIcons name="sms-failed" size={24} color="black" />
-          )}
-          onChange={(item : any) => {
-            setFalla(item.value);
-            setIsFocus(false);
-        }}/>
         <Text style={styles.text}>Ubicación</Text>
         <Dropdown
           style={[styles.dropdown]}
@@ -445,6 +411,30 @@ const Reportes = () => {
           )}
           onChange={(item : any) => {
             setEncargado(item.value);
+        }}/>
+        <Text style={styles.text}>Tipo Falla</Text>
+        <Dropdown
+          style={[styles.dropdown, isFocus && { borderColor: 'blue' }]}
+          placeholderStyle={styles.placeholderStyle}
+          selectedTextStyle={styles.selectedTextStyle}
+          inputSearchStyle={styles.inputSearchStyle}
+          iconStyle={styles.iconStyle}
+          data={fallaData}
+          search
+          maxHeight={200}
+          labelField='label'
+          valueField='value'
+          placeholder={!isFocus ? 'Seleccione la falla' : '...'}
+          searchPlaceholder='Buscar...'
+          value={falla}
+          onFocus={() => setIsFocus(true)}
+          onBlur={() => setIsFocus(false)}
+          renderLeftIcon={ () => (
+            <MaterialIcons name="sms-failed" size={24} color="black" />
+          )}
+          onChange={(item : any) => {
+            setFalla(item.value);
+            setIsFocus(false);
         }}/>
         <View style={styles.containerLine}>
           <View style={styles.containerLineInside}>
@@ -631,5 +621,5 @@ const styles = StyleSheet.create({
     marginVertical:'2%',
     resizeMode:"contain",
     borderRadius: 10,
-  }
+  },
 });
