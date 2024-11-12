@@ -5,7 +5,6 @@ import { Button } from 'react-native-paper';
 import { StyleSheet } from "react-native";
 import React, { useState } from "react";
 import { observer } from 'mobx-react';
-import { router } from "expo-router";
 import userStore from '../store';
 import axios from "axios";
 
@@ -14,33 +13,39 @@ const Login = ({}) => {
   const [loading, setLoading] = useState(false); // Nuevo estado para el ActivityIndicator
   // const [Usuario, setUsuario] = useState('');
   // const [contrasena, setContrasena] = useState('');
-  //Valores modo test
-  const [Usuario, setUsuario] = useState("Oscar");
-  const [contrasena, setContrasena] = useState("1234");
-  
-  const entrar = async () => {
-    setLoading(true);
+  const [Usuario, setUsuario] = useState('Oscar');
+  const [contrasena, setContrasena] = useState('1234');
+
+
+  const getUser = async (Usuario, contrasena) => {
     try {
-      const response = await axios.post('http://192.168.0.46:4000/login', {
-        Usuario,
-        contrasena,
-      });
-      const data = response.data;
-      if (data.success) {
+      const response = await axios.get(`http://192.168.0.46:4000/logins`);
+      const userArray = response.data.map(user => ({
+        User: user.Usuario,
+        Pass: user.contrasena,    
+      }));
+      const userFound = userArray.find( user => user.User === Usuario && user.Pass === contrasena );
+      if (userFound) {
+        // Si el usuario es encontrado, procede con la navegación
         userStore.setUsuario(Usuario);
         navigation.navigate("Formulario");
-        // router.push("/Routes/Forms");
         setContrasena("");
         setUsuario("");
       } else {
-        Alert.alert("Aviso","Credenciales inválidas");
+        // Si no se encuentra el usuario, muestra un mensaje de error
+        Alert.alert("Aviso", "Credenciales inválidas");
       }
     } catch (error) {
-      console.error("Error fetching data:", error);
+      Alert.alert("Error", "Ocurrió un error al intentar iniciar sesión.");
     } finally {
       setLoading(false);
     }
+  }
+    
+  const entrar = async () => {
+    getUser( Usuario, contrasena );
   };
+
   return (
     <View style={styles.container}>
       <View style={styles.containerLogo}>

@@ -23,6 +23,7 @@ const Reportes = () => {
   const [ubiData, setUbiData] = useState([{ }]);
   const [encData, setEncData] = useState([{ }]);
   const [falla, setFalla] = useState('');
+  let emailAddress = '', subject = '', body = '';
   //Camara
   const [image, setImage] = useState('https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster');
   const [hasCameraPermission, setHasCameraPermission] = useState({});
@@ -238,29 +239,37 @@ const Reportes = () => {
       </Text>
     );
   }
+  const limpiarCampos = () => {
+    setUsuarioReport('');
+    setEquipo('');
+    setMarca('');
+    setDescripcion('');
+    setFalla('');
+    setEncargado('');
+    setNum('');
+    setDepto('');
+    setUbi('');
+    setFotoUri(null);
+    setImage('https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster');
+  }
   const reportar = async () => {
-    if (equipo === '' || marca === '' || falla === '' || ubi === '' || encargado === '' || num === '' || depto === ''|| descripcion === '' ||   image === 'https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster' ) {
+    console.log(equipo, marca, falla, ubi, encargado, num, depto, descripcion);
+    
+    if (!equipo || !marca || !falla || !ubi || !encargado || !num || !depto || !descripcion || image === 'https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster' ) {
       Alert.alert('Debe llenar todos los campos del formulario para generar el reportar');
     } else {
       try {
         await fetchCount();
         generarFolio();
         enviarDatos();
-        setUsuarioReport('');
-        setEquipo('');
-        setMarca('');
-        setDescripcion('');
-        setFalla('');
-        setEncargado('');
-        setNum('');
-        setDepto('');
-        setUbi('');
-        setFotoUri(null);
-        setImage('https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster');
-        Alert.alert(`Aviso`, `Se ha registrado un reporte con el folio: ${folio}. El reporte ha sido enviado correctamente.`);
+        limpiarCampos();
         await fetchCount();
         generarFolio();
         openGmail();
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        sendWhatsApp();
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        Alert.alert(`Aviso`, `Se ha registrado un reporte con el folio: ${folio}. El reporte ha sido enviado correctamente.`);
       } catch (error) {
         console.error('Error:', error);
       }
@@ -302,22 +311,28 @@ const Reportes = () => {
   };
 
   const openGmail = async () => {
-    const emailAddress = 'reporteyfallas@gruca.mx';
-    const subject = `Se ha registrado un reporte con el folio: ${folio}`;
-    const body = `${fullName} ha enviado un reporte de ${equipo} debido a ${descripcion}`;
+    emailAddress = 'reporteyfallas@gruca.mx';
+    subject = `Se ha registrado un reporte con el folio: ${folio}`;
+    body = `${fullName} ha enviado un reporte de ${equipo}, con numero de folio: ${folio} debido a, ${descripcion}`;
     const mailtoUrl = `mailto:${emailAddress}?subject=${subject}&body=${body}`;
-    // const emailAddressTest = 'soporte.sistemas@gruca.mx';
-    // const subjectTest = `Se ha registrado un reporte con el folio: ${folio}`;
-    // const bodyTest = `${usuarioReport} ha enviado un reporte de ${equipo} debido a ${descripcion}`;
-    // const mailtoUrl = `mailto:${emailAddressTest}?subject=${subjectTest}&body=${bodyTest}`;
     Linking.openURL(mailtoUrl);
+  };
+  const sendWhatsApp = () => {
+    const phone = 4491014022;
+    const link = `https://wa.me/${phone}?text=${body}`;
+    Linking.canOpenURL(link).then((supported) => {
+      if (!supported) {
+        Alert.alert('Por favor instale WhatsApp para enviar un mensaje directo');
+      }
+      return Linking.openURL(link);
+    })
   };
   return (
     <View style={styles.container}>
       <ScrollView>
       <View style={styles.containerLineInside}>
         <Text style={styles.textTitle}>¡Bienvenido!</Text>
-        <Text style={styles.textSubTitle}>{usuarioReport}</Text>
+        <Text style={styles.textSubTitle}>{fullName}</Text>
       </View>
         <Text style={styles.text}>Maquina a reportar</Text>      
         <Dropdown
@@ -503,9 +518,7 @@ const Reportes = () => {
     </View>
   );
 }
-
 export default Reportes
-
 const styles = StyleSheet.create({
   container: {
     backgroundColor:'#e8e8e8',

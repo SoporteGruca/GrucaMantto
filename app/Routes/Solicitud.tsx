@@ -93,7 +93,7 @@ const Solicitud = () => {
             formData.append('descripcionfalla', '');
             formData.append('diagnostico', '');
             formData.append('acciones', '');
-            console.log(formData);
+            // console.log(formData);
             const response = await axios.post('http://192.168.0.46:4000/ticketsSoli', formData, {
                 headers: {
                 'Content-Type': 'multipart/form-data',
@@ -102,33 +102,6 @@ const Solicitud = () => {
         } catch (error) {
             console.error('Error al realizar la solicitud POST:', error);
         }
-        // try {
-        //     const fechaHora = moment().format('lll');
-        //     const response = await axios.post('http://192.168.0.46:4000/ticketsSoli', {
-        //     tipo: 'Solicitud',
-        //     fecha: fechaHora,
-        //     usuario: usuario,
-        //     encargado: usuario,
-        //     nomina: nominas.toString(),
-        //     departamento: deptos.toString(),
-        //     reporte: solicitar.toString(),
-        //     ubicacion: ubicacion.toString(),
-        //     descripcion: descripcion.toString(),
-        //     estado: 'Pendiente',
-        //     personal: '',
-        //     descripcionfalla: '',
-        //     diagnostico: '',
-        //     acciones: '',
-        //     ticket: folio.toString(),
-        //     });
-        //     Alert.alert('Solicitud Enviada');
-
-        //     console.log(response);
-            
-        // } catch (error) {
-        //     Alert.alert('Problemas al enviar Solicitud');
-        //     console.error('Error al realizar la solicitud POST:', error);
-        // }
     }
     const openGmail = () => {
         const emailAddress = 'reporteyfallas@gruca.mx';
@@ -164,15 +137,15 @@ const Solicitud = () => {
             await fetchCount();
             generarFolio();
             enviarDatos();
-            // setSolicitar('')
-            // setDescripcion('')
-            // setUbicacion('')
-            // setFotoUri(null);
-            // setImage('https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster');  
+            setSolicitar('')
+            setDescripcion('')
+            setUbicacion('')
+            setFotoUri(null);
+            setImage('https://fakeimg.pl/300x300/e8e8e8/3a456f?text=Not+Found&font=lobster');  
             await fetchCount();
             generarFolio();
             Alert.alert('Alert', 'Reporte Enviado')
-            // openGmail()
+            openGmail()
         }
     }
     return (
@@ -227,7 +200,7 @@ const Solicitud = () => {
             <Button onPress={ abrirTickets }
                 icon='file'
                 mode='contained'
-                buttonColor='#b01212'>
+                buttonColor='#374175'>
                 Abrir ticket
             </Button>
         </View>

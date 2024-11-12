@@ -22,7 +22,7 @@ export default function Formulario() {
         ),
         tabBarLabel: 'Reportes',
         tabBarLabelStyle: {
-          fontSize: 16,
+          fontSize: 14,
         }
       }}
     />
@@ -35,10 +35,11 @@ export default function Formulario() {
         ),
         tabBarLabel: 'Solicitud',
         tabBarLabelStyle: {
-          fontSize: 16,
+          fontSize: 14,
         }
       }}
     /> */}
+    
     <Tab.Screen 
       name="Mis tickets"
       component={Tickets} 
@@ -48,7 +49,7 @@ export default function Formulario() {
         ),
         tabBarLabel: 'Mis tickets',
         tabBarLabelStyle: {
-          fontSize: 16,
+          fontSize: 14,
         }
       }}
     />
