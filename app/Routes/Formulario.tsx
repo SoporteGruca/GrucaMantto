@@ -1,10 +1,12 @@
-import { Text, View } from 'react-native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'; 
 import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet } from 'react-native';
+import { Text, View } from 'react-native';
+import Solicitud from './Solicitud';
 import Reportes from './Reportes';
 import Tickets from './Tickets';
-import Solicitud from './Solicitud';
+import Test from './Test';
+import { styles } from '../Routes/Estilos';
+
 const Tab = createBottomTabNavigator();
 export default function Formulario() {  
   return (
@@ -13,12 +15,13 @@ export default function Formulario() {
       tabBarInactiveTintColor: "#242f66",
       tabBarActiveTintColor: "white",
     }}>
+
     <Tab.Screen 
       name="Reportes" 
       component={Reportes}
       options={{
         tabBarIcon: ({ color, size }) => (
-          <Ionicons name="bug" color={ color } size={ size } />
+          <Ionicons name="bug-sharp" color={ color } size={ size } />
         ),
         tabBarLabel: 'Reportes',
         tabBarLabelStyle: {
@@ -26,6 +29,7 @@ export default function Formulario() {
         }
       }}
     />
+    
     {/* <Tab.Screen
       name="Solicitud"
       component={Solicitud} 
@@ -39,13 +43,13 @@ export default function Formulario() {
         }
       }}
     /> */}
-    
-    <Tab.Screen 
+
+    <Tab.Screen
       name="Mis tickets"
       component={Tickets} 
       options={{
         tabBarIcon: ({ color, size }) => (
-          <Ionicons name="server-outline" color={ color } size={ size } />
+          <Ionicons name="library" color={ color } size={ size } />
         ),
         tabBarLabel: 'Mis tickets',
         tabBarLabelStyle: {
@@ -53,12 +57,21 @@ export default function Formulario() {
         }
       }}
     />
+
+    {/* <Tab.Screen
+      name="Pruebas"
+      component={Test} 
+      options={{
+        tabBarIcon: ({ color, size }) => (
+          <Ionicons name="terminal" color={ color } size={ size } />
+        ),
+        tabBarLabel: 'Pruebas',
+        tabBarLabelStyle: {
+          fontSize: 14,
+        }
+      }}
+    /> */}
+    
     </Tab.Navigator>
   );
 }
-const styles = StyleSheet.create({
-  container: {
-    height: "100%",
-    justifyContent: "flex-end",
-  }
-});
